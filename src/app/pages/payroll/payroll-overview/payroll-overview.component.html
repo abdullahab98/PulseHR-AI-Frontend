@@ -1,0 +1,309 @@
+<div class="p-6 max-w-7xl mx-auto space-y-6">
+
+  <!-- ========================================================= -->
+  <!-- Enterprise Payroll Workflow Pipeline Banner (Overview Only) -->
+  <!-- ========================================================= -->
+  <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 p-6 sm:p-8 text-white shadow-xl border border-emerald-900/50">
+    <div class="absolute -right-10 -top-10 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+      <div class="space-y-2">
+        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-bold uppercase tracking-wider">
+          <span>💼 Enterprise Payroll Management</span>
+          <span>•</span>
+          <span>9 Core Modules</span>
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-white">
+          Payroll Central Dashboard
+        </h1>
+        <p class="text-xs sm:text-sm text-slate-300 max-w-2xl">
+          Automated multi-tier salary computation, biometric attendance & leave integration, customizable allowances, tax deductions, 3-tier approval cycle, and electronic disbursement.
+        </p>
+      </div>
+
+      <!-- Quick Month Cycle Picker & Generate Button -->
+      <div class="flex items-center space-x-3 bg-white/10 backdrop-blur-md p-3 rounded-2xl border border-white/10 shrink-0">
+        <div>
+          <label class="block text-[10px] text-slate-300 uppercase font-black">Payroll Cycle</label>
+          <input type="month"
+                 [(ngModel)]="selectedMonth"
+                 (change)="onMonthChange()"
+                 class="bg-slate-800 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-700 focus:outline-none focus:border-emerald-500 mt-1 cursor-pointer">
+        </div>
+        <button (click)="openGenerateModal()"
+                class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs transition-all shadow-lg hover:shadow-emerald-500/25 flex items-center space-x-1.5 mt-3">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          <span>Generate Run</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 6-Stage Workflow Pipeline -->
+    <div class="mt-8 pt-6 border-t border-white/10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-center">
+      <div (click)="navigateTo('/payroll/salary-structure')" class="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 cursor-pointer border border-white/10 transition-all">
+        <span class="text-base">1️⃣</span>
+        <p class="font-bold text-white mt-1 text-xs">Salary Setup</p>
+        <p class="text-[10px] text-slate-400">Employee Base & HRA</p>
+      </div>
+      <div (click)="navigateTo('/payroll/attendance-integration')" class="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 cursor-pointer border border-white/10 transition-all">
+        <span class="text-base">2️⃣</span>
+        <p class="font-bold text-white mt-1 text-xs">Attendance Sync</p>
+        <p class="text-[10px] text-slate-400">Biometric & Leaves</p>
+      </div>
+      <div (click)="navigateTo('/payroll/processing')" class="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 cursor-pointer border border-white/10 transition-all">
+        <span class="text-base">3️⃣</span>
+        <p class="font-bold text-white mt-1 text-xs">Generation</p>
+        <p class="text-[10px] text-slate-400">Calculate Batch</p>
+      </div>
+      <div (click)="navigateTo('/payroll/processing')" class="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 cursor-pointer border border-white/10 transition-all">
+        <span class="text-base">4️⃣</span>
+        <p class="font-bold text-white mt-1 text-xs">Review & Approve</p>
+        <p class="text-[10px] text-slate-400">Audit & Validation</p>
+      </div>
+      <div (click)="navigateTo('/payroll/disbursement')" class="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 cursor-pointer border border-white/10 transition-all">
+        <span class="text-base">5️⃣</span>
+        <p class="font-bold text-white mt-1 text-xs">Disbursement</p>
+        <p class="text-[10px] text-slate-400">Bank / MFS Payout</p>
+      </div>
+      <div (click)="navigateTo('/payroll/payslips')" class="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 cursor-pointer border border-white/10 transition-all">
+        <span class="text-base">6️⃣</span>
+        <p class="font-bold text-white mt-1 text-xs">Payslips & Report</p>
+        <p class="text-[10px] text-slate-400">Print & Analytics</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- KPI Metric Cards -->
+  <!-- ========================================================= -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="fuse-card-light p-5 rounded-2xl bg-white border border-slate-200 shadow-sm relative overflow-hidden">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-bold text-slate-500 uppercase">Total Monthly Net Payout</span>
+        <span class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">৳</span>
+      </div>
+      <p class="text-2xl font-black text-slate-900 mt-2">৳{{ (summary?.total_monthly_payout || 0) | number:'1.2-2' }}</p>
+      <p class="text-[11px] text-emerald-600 font-semibold mt-1">For {{ selectedMonth }} cycle</p>
+    </div>
+
+    <div class="fuse-card-light p-5 rounded-2xl bg-white border border-slate-200 shadow-sm relative overflow-hidden">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-bold text-slate-500 uppercase">Allowances Disbursed</span>
+        <span class="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold">🏠</span>
+      </div>
+      <p class="text-2xl font-black text-slate-900 mt-2">৳{{ (summary?.total_allowances || 0) | number:'1.2-2' }}</p>
+      <p class="text-[11px] text-blue-600 font-semibold mt-1">HRA, Medical & Travel</p>
+    </div>
+
+    <div class="fuse-card-light p-5 rounded-2xl bg-white border border-slate-200 shadow-sm relative overflow-hidden">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-bold text-slate-500 uppercase">Total Deductions</span>
+        <span class="w-8 h-8 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center font-bold">✂️</span>
+      </div>
+      <p class="text-2xl font-black text-rose-600 mt-2">৳{{ (summary?.total_deductions || 0) | number:'1.2-2' }}</p>
+      <p class="text-[11px] text-slate-500 font-semibold mt-1">Absent, Late, Tax & PF</p>
+    </div>
+
+    <div class="fuse-card-light p-5 rounded-2xl bg-white border border-slate-200 shadow-sm relative overflow-hidden">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-bold text-slate-500 uppercase">Pending Disbursement</span>
+        <span class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold">⏳</span>
+      </div>
+      <p class="text-2xl font-black text-amber-600 mt-2">{{ summary?.pending_disbursement_count || 0 }} Employees</p>
+      <p class="text-[11px] text-slate-500 font-semibold mt-1">৳{{ (summary?.pending_disbursement_amount || 0) | number:'1.2-2' }} to clear</p>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- Navigation Shortcuts to the 8 Specialized Panels -->
+  <!-- ========================================================= -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div (click)="navigateTo('/payroll/salary-structure')"
+         class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-emerald-300 cursor-pointer transition-all flex items-start space-x-3 group">
+      <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-lg font-bold group-hover:scale-110 transition-transform">
+        💼
+      </div>
+      <div>
+        <h3 class="text-xs font-black text-slate-900 group-hover:text-emerald-700 transition-colors">1. Salary Structure</h3>
+        <p class="text-[11px] text-slate-500 mt-0.5">Base salary & allowances</p>
+      </div>
+    </div>
+
+    <div (click)="navigateTo('/payroll/attendance-integration')"
+         class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-emerald-300 cursor-pointer transition-all flex items-start space-x-3 group">
+      <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center text-lg font-bold group-hover:scale-110 transition-transform">
+        ⏱️
+      </div>
+      <div>
+        <h3 class="text-xs font-black text-slate-900 group-hover:text-emerald-700 transition-colors">2. Attendance Integration</h3>
+        <p class="text-[11px] text-slate-500 mt-0.5">Present, lates & leaves sync</p>
+      </div>
+    </div>
+
+    <div (click)="navigateTo('/payroll/allowances-bonuses')"
+         class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-emerald-300 cursor-pointer transition-all flex items-start space-x-3 group">
+      <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center text-lg font-bold group-hover:scale-110 transition-transform">
+        🎁
+      </div>
+      <div>
+        <h3 class="text-xs font-black text-slate-900 group-hover:text-emerald-700 transition-colors">3 & 4. Allowances & Bonuses</h3>
+        <p class="text-[11px] text-slate-500 mt-0.5">HRA, Medical, Festival Bonus</p>
+      </div>
+    </div>
+
+    <div (click)="navigateTo('/payroll/deductions')"
+         class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-emerald-300 cursor-pointer transition-all flex items-start space-x-3 group">
+      <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-700 flex items-center justify-center text-lg font-bold group-hover:scale-110 transition-transform">
+        ✂️
+      </div>
+      <div>
+        <h3 class="text-xs font-black text-slate-900 group-hover:text-emerald-700 transition-colors">5. Deductions Policy</h3>
+        <p class="text-[11px] text-slate-500 mt-0.5">Tax, PF & late fines</p>
+      </div>
+    </div>
+
+    <div (click)="navigateTo('/payroll/processing')"
+         class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-emerald-300 cursor-pointer transition-all flex items-start space-x-3 group">
+      <div class="w-10 h-10 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center text-lg font-bold group-hover:scale-110 transition-transform">
+        ⚙️
+      </div>
+      <div>
+        <h3 class="text-xs font-black text-slate-900 group-hover:text-emerald-700 transition-colors">6. Monthly Processing</h3>
+        <p class="text-[11px] text-slate-500 mt-0.5">Batch calculation & approval</p>
+      </div>
+    </div>
+
+    <div (click)="navigateTo('/payroll/disbursement')"
+         class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-emerald-300 cursor-pointer transition-all flex items-start space-x-3 group">
+      <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center text-lg font-bold group-hover:scale-110 transition-transform">
+        💳
+      </div>
+      <div>
+        <h3 class="text-xs font-black text-slate-900 group-hover:text-emerald-700 transition-colors">7. Salary Disbursement</h3>
+        <p class="text-[11px] text-slate-500 mt-0.5">Bank & MFS payment records</p>
+      </div>
+    </div>
+
+    <div (click)="navigateTo('/payroll/payslips')"
+         class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-emerald-300 cursor-pointer transition-all flex items-start space-x-3 group">
+      <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center text-lg font-bold group-hover:scale-110 transition-transform">
+        📄
+      </div>
+      <div>
+        <h3 class="text-xs font-black text-slate-900 group-hover:text-emerald-700 transition-colors">8. Payslip Management</h3>
+        <p class="text-[11px] text-slate-500 mt-0.5">Printable employee salary slips</p>
+      </div>
+    </div>
+
+    <div (click)="navigateTo('/payroll/reports')"
+         class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-emerald-300 cursor-pointer transition-all flex items-start space-x-3 group">
+      <div class="w-10 h-10 rounded-xl bg-sky-50 text-sky-700 flex items-center justify-center text-lg font-bold group-hover:scale-110 transition-transform">
+        📈
+      </div>
+      <div>
+        <h3 class="text-xs font-black text-slate-900 group-hover:text-emerald-700 transition-colors">9. Payroll Reports</h3>
+        <p class="text-[11px] text-slate-500 mt-0.5">Department costs & CSV export</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- Recent Batches Table -->
+  <!-- ========================================================= -->
+  <div class="fuse-card-light p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-base font-black text-slate-900">Recent Payroll Batches</h2>
+        <p class="text-xs text-slate-500">Historical records of calculated monthly enterprise payroll runs</p>
+      </div>
+      <button (click)="openGenerateModal()" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition">
+        + New Payroll Run
+      </button>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs">
+        <thead class="bg-slate-50 text-slate-500 font-bold uppercase text-[10px] border-b border-slate-200">
+          <tr>
+            <th class="p-3">Month</th>
+            <th class="p-3">Batch Title</th>
+            <th class="p-3 text-center">Employees</th>
+            <th class="p-3 text-right">Total Gross</th>
+            <th class="p-3 text-right">Total Deductions</th>
+            <th class="p-3 text-right">Total Net</th>
+            <th class="p-3 text-center">Status</th>
+            <th class="p-3 text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 font-medium">
+          <tr *ngFor="let b of batches" class="hover:bg-slate-50/80">
+            <td class="p-3 font-bold text-slate-900">{{ b.batch_month }}</td>
+            <td class="p-3 text-slate-700 font-semibold">{{ b.title }}</td>
+            <td class="p-3 text-center font-bold text-slate-900">{{ b.total_employees }}</td>
+            <td class="p-3 text-right text-slate-900">৳{{ b.total_gross | number:'1.2-2' }}</td>
+            <td class="p-3 text-right text-rose-600 font-semibold">-৳{{ b.total_deductions | number:'1.2-2' }}</td>
+            <td class="p-3 text-right font-black text-emerald-700 text-sm">৳{{ b.total_net_salary | number:'1.2-2' }}</td>
+            <td class="p-3 text-center">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase"
+                    [ngClass]="{
+                      'bg-amber-100 text-amber-800 border border-amber-200': b.status === 'DRAFT',
+                      'bg-blue-100 text-blue-800 border border-blue-200': b.status === 'REVIEWED',
+                      'bg-purple-100 text-purple-800 border border-purple-200': b.status === 'APPROVED',
+                      'bg-emerald-100 text-emerald-800 border border-emerald-200': b.status === 'DISBURSED'
+                    }">
+                {{ b.status }}
+              </span>
+            </td>
+            <td class="p-3 text-right space-x-1">
+              <button (click)="navigateTo('/payroll/processing')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[11px] font-bold">
+                View in Processing ➔
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="batches.length === 0">
+            <td colspan="8" class="p-6 text-center text-slate-400">No payroll batches generated yet. Click "Generate Run" to calculate this month's payroll.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Generate Modal -->
+  <div *ngIf="showGenerateModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <h3 class="font-black text-slate-900 text-sm">Generate Monthly Payroll Run</h3>
+        <button (click)="closeGenerateModal()" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block text-slate-600 font-bold mb-1">Payroll Month (YYYY-MM)</label>
+          <input type="month" [(ngModel)]="generateForm.month_year" class="w-full p-2 border border-slate-200 rounded-lg">
+        </div>
+        <div>
+          <label class="block text-slate-600 font-bold mb-1">Batch Title</label>
+          <input type="text" [(ngModel)]="generateForm.title" class="w-full p-2 border border-slate-200 rounded-lg">
+        </div>
+        <div>
+          <label class="block text-slate-600 font-bold mb-1">Include Bonus (Optional)</label>
+          <select [(ngModel)]="generateForm.include_bonus_id" class="w-full p-2 border border-slate-200 rounded-lg">
+            <option [ngValue]="undefined">No Special Bonus</option>
+            <option *ngFor="let b of bonusConfigs" [ngValue]="b.id">{{ b.title }} ({{ b.value }}{{ b.calculation_type === 'PERCENTAGE' ? '%' : '৳' }})</option>
+          </select>
+        </div>
+        <p class="text-[11px] text-slate-500">
+          * This will import present days, lates, leaves, overtime hours, evaluate salary structures, and compute gross & net salaries for all employees.
+        </p>
+      </div>
+
+      <div class="flex justify-end space-x-2 pt-3 border-t border-slate-100">
+        <button (click)="closeGenerateModal()" class="px-3 py-1.5 rounded-lg text-slate-600 font-bold text-xs hover:bg-slate-100">Cancel</button>
+        <button (click)="submitGeneratePayroll()" [disabled]="loading" class="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow">
+          {{ loading ? 'Calculating...' : 'Run Payroll Calculation' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

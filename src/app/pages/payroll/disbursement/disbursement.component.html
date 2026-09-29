@@ -1,0 +1,151 @@
+<div class="p-6 max-w-7xl mx-auto space-y-6">
+
+  <!-- Header Banner -->
+  <div class="fuse-card-light p-6 rounded-2xl bg-white flex flex-col md:flex-row md:items-center md:justify-between border-l-4 border-amber-500 shadow-sm gap-4">
+    <div class="space-y-1">
+      <div class="flex items-center space-x-2">
+        <span class="px-2.5 py-0.5 rounded text-[10px] font-extrabold uppercase bg-amber-100 text-amber-800 tracking-wider">MODULE 7</span>
+        <span class="text-xs text-slate-500 font-semibold">• Payroll Management</span>
+      </div>
+      <h1 class="text-2xl font-black text-slate-900 tracking-tight">💳 Salary Disbursement</h1>
+      <p class="text-xs text-slate-600">Execute electronic payouts via Bank Wire, bKash, Nagad or Rocket, record transaction IDs and mark salaries as Paid.</p>
+    </div>
+    <div class="flex items-center space-x-3">
+      <div>
+        <label class="block text-[10px] text-slate-500 uppercase font-black">Month Cycle</label>
+        <input type="month"
+               [(ngModel)]="selectedMonth"
+               (change)="onMonthChange()"
+               class="p-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-amber-500 shadow-sm font-bold">
+      </div>
+      <button (click)="openDisburseModal()"
+              [disabled]="disburseSelection.size === 0"
+              class="px-4 py-2 mt-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-xs shadow transition flex items-center space-x-1.5">
+        <span>Disburse Selected ({{ disburseSelection.size }})</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Disbursement Table -->
+  <div class="fuse-card-light p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-base font-black text-slate-900">Employee Salary Disbursement Register</h2>
+        <p class="text-xs text-slate-500">Track clearance status and record payment references for {{ selectedMonth }}</p>
+      </div>
+      <button (click)="toggleSelectAll()" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition">
+        Select All Pending
+      </button>
+    </div>
+
+    <div *ngIf="loading" class="py-12 text-center text-slate-400 text-xs">Loading disbursement queue...</div>
+
+    <div *ngIf="!loading" class="overflow-x-auto">
+      <table class="w-full text-left text-xs">
+        <thead class="bg-slate-50 text-slate-500 font-bold uppercase text-[10px] border-b border-slate-200">
+          <tr>
+            <th class="p-3 w-8">
+              <input type="checkbox" (change)="toggleSelectAll()">
+            </th>
+            <th class="p-3">Employee Details</th>
+            <th class="p-3">Payment Channel</th>
+            <th class="p-3 text-right">Net Payable</th>
+            <th class="p-3 text-center">Status</th>
+            <th class="p-3">Transaction ID / Ref</th>
+            <th class="p-3 text-center">Paid Date</th>
+            <th class="p-3 text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 font-medium">
+          <tr *ngFor="let d of disbursements" class="hover:bg-slate-50">
+            <td class="p-3">
+              <input type="checkbox"
+                     [checked]="disburseSelection.has(d.id)"
+                     [disabled]="d.payment_status === 'PAID'"
+                     (change)="toggleSelection(d.id)">
+            </td>
+            <td class="p-3 font-bold text-slate-900">
+              <p>{{ d.employee_name }}</p>
+              <p class="text-[10px] text-slate-400">{{ d.designation }} • {{ d.department }}</p>
+            </td>
+            <td class="p-3">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700">
+                {{ d.payment_method || 'BANK' }}
+              </span>
+              <p class="text-[10px] text-slate-400 mt-0.5">{{ d.bank_account_no || 'Acct on file' }}</p>
+            </td>
+            <td class="p-3 text-right font-black text-emerald-700 text-sm">৳{{ d.net_salary | number:'1.2-2' }}</td>
+            <td class="p-3 text-center">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase"
+                    [ngClass]="{
+                      'bg-emerald-100 text-emerald-800 border border-emerald-200': d.payment_status === 'PAID',
+                      'bg-amber-100 text-amber-800 border border-amber-200': d.payment_status === 'PENDING'
+                    }">
+                {{ d.payment_status }}
+              </span>
+            </td>
+            <td class="p-3 text-slate-600 font-mono text-[11px]">{{ d.transaction_id || '-' }}</td>
+            <td class="p-3 text-center text-slate-500 text-[11px]">{{ d.payment_date || '-' }}</td>
+            <td class="p-3 text-right">
+              <button *ngIf="d.payment_status !== 'PAID'"
+                      (click)="openDisburseModal(d.id)"
+                      class="px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] shadow transition">
+                Pay Now
+              </button>
+              <span *ngIf="d.payment_status === 'PAID'" class="text-emerald-700 font-bold text-xs">✓ Cleared</span>
+            </td>
+          </tr>
+          <tr *ngIf="disbursements.length === 0">
+            <td colspan="8" class="p-6 text-center text-slate-400">No disbursements queued for {{ selectedMonth }}. Generate payroll first.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Disburse Modal -->
+  <div *ngIf="showDisburseModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div>
+          <h3 class="font-black text-slate-900 text-sm">Disburse Salary Payment</h3>
+          <p class="text-[11px] text-slate-500">{{ disburseSelection.size }} employee(s) selected</p>
+        </div>
+        <button (click)="closeDisburseModal()" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block text-slate-600 font-bold mb-1">Disbursement Method</label>
+          <select [(ngModel)]="disburseForm.payment_method" class="w-full p-2 border border-slate-200 rounded-lg">
+            <option value="BANK">Bank Electronic Transfer</option>
+            <option value="BKASH">bKash Corporate Payout</option>
+            <option value="NAGAD">Nagad Direct</option>
+            <option value="ROCKET">DBBL Rocket</option>
+            <option value="CASH">Cash / Cheque</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-slate-600 font-bold mb-1">Payment Date</label>
+          <input type="date" [(ngModel)]="disburseForm.payment_date" class="w-full p-2 border border-slate-200 rounded-lg">
+        </div>
+        <div>
+          <label class="block text-slate-600 font-bold mb-1">Transaction ID / Voucher No</label>
+          <input type="text" [(ngModel)]="disburseForm.transaction_id" class="w-full p-2 border border-slate-200 rounded-lg font-mono">
+        </div>
+        <div>
+          <label class="block text-slate-600 font-bold mb-1">Payment Reference</label>
+          <input type="text" [(ngModel)]="disburseForm.payment_reference" class="w-full p-2 border border-slate-200 rounded-lg">
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-2 pt-3 border-t border-slate-100">
+        <button (click)="closeDisburseModal()" class="px-3 py-1.5 rounded-lg text-slate-600 font-bold text-xs hover:bg-slate-100">Cancel</button>
+        <button (click)="submitDisbursement()" [disabled]="loading" class="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow">
+          {{ loading ? 'Processing...' : 'Confirm & Disburse' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
