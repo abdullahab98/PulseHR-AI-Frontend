@@ -1,0 +1,74 @@
+<header class="bg-white sticky top-0 z-30 shrink-0 w-full px-6 py-3 border-b border-slate-200 flex items-center justify-between shadow-xs">
+  <!-- Left Side: Quick Toolbar Shortcut Icons -->
+  <div class="flex items-center space-x-3 text-slate-500">
+    <button title="Toggle Navigation" class="p-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-800 transition-colors">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+      </svg>
+    </button>
+    <div class="h-4 w-px bg-slate-200"></div>
+    <button title="Workspace Layout" class="p-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-800 transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
+      </svg>
+    </button>
+    <button title="Calendar" class="p-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-800 transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+      </svg>
+    </button>
+    <button title="Favorites" class="p-1.5 rounded-lg hover:bg-slate-100 text-amber-500 transition-colors">
+      <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+        <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+      </svg>
+    </button>
+
+
+  </div>
+
+
+  <!-- Right Side: Controls & Actions -->
+  <div class="flex items-center space-x-3">
+    <!-- Attendance Quick Check In/Out Button -->
+    <button *ngIf="!isCheckedIn" (click)="doCheckIn()" 
+            class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold hover:bg-emerald-100 transition-all">
+      <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+      <span>Check-In</span>
+    </button>
+
+    <button *ngIf="isCheckedIn" (click)="doCheckOut()" 
+            class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-rose-50 text-rose-700 border border-rose-200 text-xs font-semibold hover:bg-rose-100 transition-all">
+      <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+      <span>Check-Out</span>
+    </button>
+
+    <!-- Language Selector Icon -->
+    <button title="Language" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 transition-colors text-sm">
+      🇺🇸
+    </button>
+
+    <!-- Palette Theme Icon -->
+    <button (click)="toggleTheme()" title="Toggle Theme" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+      </svg>
+    </button>
+
+    <!-- Notifications Bell -->
+    <button title="Notifications" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors relative">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+      </svg>
+      <span class="absolute top-1 right-1 w-2 h-2 bg-blue-600 rounded-full"></span>
+    </button>
+
+    <!-- PulseHR AI Assistant Trigger Button -->
+    <button (click)="openAIAssistant.emit()" title="PulseHR AI Assistant"
+            class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+      </svg>
+      <span>PulseHR AI</span>
+    </button>
+  </div>
+</header>

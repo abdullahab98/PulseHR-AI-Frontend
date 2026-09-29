@@ -1,0 +1,360 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --fuse-sidebar-bg: #0d1527;
+  --fuse-sidebar-hover: #182338;
+  --fuse-sidebar-active: #1c2b45;
+  --fuse-sidebar-text: #94a3b8;
+  --fuse-sidebar-text-active: #60a5fa;
+  --fuse-primary: #2563eb;
+}
+
+html, body {
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden !important;
+  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: #f8fafc;
+  color: #0f172a;
+  letter-spacing: -0.011em;
+}
+
+/* High-Contrast Fuse Light Card Styling */
+.fuse-card-light {
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease-in-out;
+}
+
+.fuse-card-light:hover {
+  border-color: #94a3b8;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.09), 0 2px 4px -1px rgba(0, 0, 0, 0.05);
+}
+
+/* High Contrast Form Input */
+.fuse-input-light {
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+  font-weight: 500;
+  transition: all 0.15s ease-in-out;
+}
+
+.fuse-input-light:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.fuse-input-light::placeholder {
+  color: #64748b;
+  font-weight: 400;
+}
+
+/* Fuse Dark Sidebar Navigation Links */
+.fuse-sidebar-link {
+  color: #cbd5e1;
+  font-weight: 500;
+  transition: all 0.15s ease-in-out;
+  border-radius: 0.5rem;
+}
+
+.fuse-sidebar-link:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.fuse-sidebar-link-active {
+  background-color: #182338 !important;
+  color: #60a5fa !important;
+  font-weight: 700 !important;
+}
+
+.fuse-sidebar-link-active svg {
+  color: #3b82f6 !important;
+}
+
+/* High Contrast Status Badges (Crisp contrast text on soft background) */
+.badge-shipped, .badge-delivered, .badge-completed, .badge-in-progress, .badge-emerald {
+  background-color: #dcfce7;
+  color: #14532d;
+  border: 1px solid #bbf7d0;
+  font-weight: 700;
+}
+
+.badge-processing, .badge-blue {
+  background-color: #dbeafe;
+  color: #1e3a8a;
+  border: 1px solid #bfdbfe;
+  font-weight: 700;
+}
+
+.badge-indigo {
+  background-color: #e0e7ff;
+  color: #312e81;
+  border: 1px solid #c7d2fe;
+  font-weight: 700;
+}
+
+.badge-pending, .badge-amber {
+  background-color: #fef3c7;
+  color: #78350f;
+  border: 1px solid #fde68a;
+  font-weight: 700;
+}
+
+.badge-refunded, .badge-delayed, .badge-rose {
+  background-color: #ffe4e6;
+  color: #881337;
+  border: 1px solid #fecdd3;
+  font-weight: 700;
+}
+
+.badge-slate {
+  background-color: #f1f5f9;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+  font-weight: 700;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Dark Mode Global Overrides */
+html.dark, html.dark body {
+  background-color: #0b1120 !important;
+  color: #f1f5f9 !important;
+}
+
+html.dark .fuse-card-light {
+  background-color: #152033;
+  border-color: #24344d;
+  color: #f1f5f9;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
+}
+
+html.dark .fuse-card-light:hover {
+  border-color: #3b5278;
+}
+
+html.dark .fuse-input-light {
+  background-color: #0f172a;
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+html.dark .fuse-input-light:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+}
+
+html.dark header {
+  background-color: #0d1527 !important;
+  border-color: #1e293b !important;
+}
+
+html.dark .bg-slate-50 {
+  background-color: #0b1120 !important;
+}
+
+html.dark .bg-white {
+  background-color: #152033 !important;
+}
+
+html.dark .text-slate-900 {
+  color: #f8fafc !important;
+}
+
+html.dark .text-slate-800 {
+  color: #e2e8f0 !important;
+}
+
+html.dark .text-slate-700 {
+  color: #cbd5e1 !important;
+}
+
+html.dark .border-slate-200 {
+  border-color: #1e293b !important;
+}
+
+html.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #1e293b !important;
+}
+
+html.dark ::-webkit-scrollbar-track {
+  background: #0d1527;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
+/* ===================================================
+   Enterprise AI Operations Report Prose & PDF Styles
+   =================================================== */
+.report-prose {
+  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #1e293b;
+  font-size: 0.8125rem;
+  line-height: 1.65;
+}
+
+.report-prose h1 {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.report-prose h2 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #1e293b;
+  letter-spacing: -0.015em;
+  margin-top: 1.25rem;
+  margin-bottom: 0.6rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.report-prose h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #334155;
+  margin-top: 1rem;
+  margin-bottom: 0.4rem;
+}
+
+.report-prose p {
+  margin-bottom: 0.75rem;
+  color: #334155;
+}
+
+.report-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.report-prose th {
+  background-color: #0f172a;
+  color: #ffffff;
+  font-weight: 700;
+  padding: 0.6rem 0.85rem;
+  text-align: left;
+  border: 1px solid #1e293b;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-size: 0.6875rem;
+}
+
+.report-prose td {
+  padding: 0.55rem 0.85rem;
+  border: 1px solid #e2e8f0;
+  background-color: #ffffff;
+  color: #334155;
+}
+
+.report-prose tr:nth-child(even) td {
+  background-color: #f8fafc;
+}
+
+.report-prose blockquote {
+  border-left: 4px solid #2563eb;
+  background-color: #f0f7ff;
+  padding: 0.6rem 1rem;
+  margin: 0.85rem 0;
+  border-radius: 0 0.5rem 0.5rem 0;
+  color: #1e40af;
+  font-weight: 500;
+}
+
+.report-prose ul {
+  list-style-type: disc;
+  padding-left: 1.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.report-prose ol {
+  list-style-type: decimal;
+  padding-left: 1.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.report-prose li {
+  margin-bottom: 0.3rem;
+  color: #334155;
+}
+
+.report-prose strong {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.report-prose hr {
+  border: none;
+  border-top: 1px solid #e2e8f0;
+  margin: 1.25rem 0;
+}
+
+/* Print Styles for PDF generation */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #printable-executive-report, #printable-executive-report * {
+    visibility: visible;
+  }
+  #printable-executive-report {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .page-break-avoid {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+}
+
+

@@ -1,0 +1,25 @@
+<!-- Login Fullscreen Layout -->
+<div *ngIf="isLoginPage()" class="h-screen w-screen overflow-y-auto bg-white">
+  <router-outlet></router-outlet>
+</div>
+
+<!-- PulseHR AI Executive Workspace Split Layout (Fixed Header + Fixed Sidebar + Independent Main Viewport Scroll) -->
+<div *ngIf="!isLoginPage()" class="flex h-screen w-screen overflow-hidden bg-slate-50 text-slate-900 font-sans selection:bg-blue-600 selection:text-white">
+  
+  <!-- PulseHR AI Dark Sidebar (Fixed 100vh) -->
+  <app-sidebar class="shrink-0 h-screen"></app-sidebar>
+
+  <!-- PulseHR AI Light Main Content Workspace (Fixed 100vh flex column) -->
+  <div class="flex-1 flex flex-col min-w-0 h-screen overflow-hidden bg-slate-50">
+    <!-- PulseHR AI Light Navbar Header (Fixed top header, shrink-0) -->
+    <app-navbar (openAIAssistant)="isAIDrawerOpen = true" class="shrink-0 z-30"></app-navbar>
+
+    <!-- Main Workspace Page Viewport (THIS IS THE ONLY SCROLLABLE AREA ON THE PAGE) -->
+    <main class="flex-1 p-6 lg:p-8 overflow-y-auto">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+
+  <!-- Floating AI Executive Assistant Drawer -->
+  <app-ai-assistant-drawer [isOpen]="isAIDrawerOpen" (close)="isAIDrawerOpen = false"></app-ai-assistant-drawer>
+</div>

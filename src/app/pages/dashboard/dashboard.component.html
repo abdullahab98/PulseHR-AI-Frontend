@@ -1,0 +1,318 @@
+<div class="p-6 max-w-7xl mx-auto space-y-6">
+  
+  <!-- Header Title -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between pb-2 border-b border-slate-200">
+    <div>
+      <h1 class="text-2xl font-black text-slate-900 tracking-tight">Executive Workspace & Staff Dashboard</h1>
+      <p class="text-xs text-slate-600 font-semibold mt-0.5">Real-time Attendance Telemetry, Employee Profile Dossier & Performance Analytics</p>
+    </div>
+    
+    <div class="mt-2 md:mt-0 flex items-center space-x-2">
+      <span class="px-3 py-1 rounded-full text-xs font-extrabold bg-blue-100 text-blue-800 border border-blue-200">
+        Today: {{ formattedDateStr }}
+      </span>
+    </div>
+  </div>
+
+  <!-- SECTION 1: CHECK-IN / CHECK-OUT, WORK DURATION & CALENDAR DATE CARDS -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    
+    <!-- Left Box: Check-In / Check-Out & Work Duration Tracker (7 cols) -->
+    <div class="lg:col-span-7 fuse-card-light p-6 space-y-5 border-l-4 border-blue-600">
+      <div class="flex items-center justify-between">
+        <div>
+          <span class="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase bg-blue-100 text-blue-800 tracking-wider">TIME & ATTENDANCE</span>
+          <h2 class="text-lg font-black text-slate-900 mt-1">Check In / Check Out & Duration</h2>
+        </div>
+
+        <span class="px-3 py-1 rounded-full text-xs font-black uppercase"
+              [ngClass]="isCheckedIn ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-slate-100 text-slate-700 border border-slate-300'">
+          Status: {{ isCheckedIn ? 'CHECKED IN' : 'CHECKED OUT' }}
+        </span>
+      </div>
+
+      <!-- Live Duration & Time Cards Grid -->
+      <div class="grid grid-cols-3 gap-3 text-center">
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+          <span class="text-[10px] font-bold text-slate-500 uppercase">Check In Time</span>
+          <p class="text-base font-black text-blue-700 font-mono">{{ formatTime24(checkInTime) }}</p>
+        </div>
+
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+          <span class="text-[10px] font-bold text-slate-500 uppercase">Check Out Time</span>
+          <p class="text-base font-black text-purple-700 font-mono">{{ formatTime24(checkOutTime) }}</p>
+        </div>
+
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+          <span class="text-[10px] font-bold text-slate-500 uppercase">Work Duration</span>
+          <p class="text-base font-black text-emerald-700 font-mono">{{ formattedDurationStr }}</p>
+        </div>
+      </div>
+
+      <!-- Interactive Action Buttons -->
+      <div class="flex items-center space-x-3 pt-2">
+        <button (click)="handleCheckIn()" [disabled]="!!checkInTime || isCheckedIn || isProcessingAttendance"
+                class="flex-1 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-extrabold shadow-md hover:shadow-lg transition-all flex items-center justify-center space-x-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+          <span>{{ checkInTime ? 'Checked In' : 'Check In Now' }}</span>
+        </button>
+
+        <button (click)="handleCheckOut()" [disabled]="!isCheckedIn || !!checkOutTime || isProcessingAttendance"
+                class="flex-1 py-3 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 active:bg-rose-800 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-extrabold shadow-md hover:shadow-lg transition-all flex items-center justify-center space-x-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 01-3-3h4a3 3 0 013 3v1"/></svg>
+          <span>{{ checkOutTime ? 'Checked Out' : 'Check Out' }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Right Box: Live Real-Time Clock, Date & Shift Telemetry Widget (5 cols) -->
+    <div class="lg:col-span-5 fuse-card-light p-6 space-y-4 border-l-4 border-indigo-600 flex flex-col justify-between">
+      
+      <!-- Top Bar: Header & Controls -->
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+        <div class="flex items-center space-x-2">
+          <span class="px-2.5 py-0.5 rounded text-[10px] font-extrabold uppercase bg-indigo-100 text-indigo-800 tracking-wider flex items-center space-x-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-ping"></span>
+            <span>LIVE TIMEKEEPER</span>
+          </span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button (click)="toggleTimeFormat()" 
+                  class="text-[10px] font-extrabold px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition-all cursor-pointer shadow-xs"
+                  [title]="'Switch to ' + (is24HourFormat ? '12-Hour AM/PM' : '24-Hour') + ' format'">
+            {{ is24HourFormat ? '24H' : '12H' }}
+          </button>
+          <span class="text-xs font-extrabold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-md border border-indigo-100">
+            Shift: 09:00 AM - 06:00 PM
+          </span>
+        </div>
+      </div>
+
+      <!-- Hero Digital Clock & Live Date Display Card -->
+      <div class="p-4 rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white shadow-md relative overflow-hidden">
+        <!-- Ambient lighting glow effects -->
+        <div class="absolute -right-8 -top-8 w-28 h-28 bg-indigo-500/20 rounded-full blur-2xl pointer-events-none"></div>
+        <div class="absolute -left-8 -bottom-8 w-28 h-28 bg-purple-500/20 rounded-full blur-2xl pointer-events-none"></div>
+
+        <div class="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <!-- Digital Clock Display -->
+          <div>
+            <div class="flex items-baseline space-x-2">
+              <span class="text-3xl sm:text-4xl font-black font-mono tracking-tight text-white drop-shadow-sm">
+                {{ liveTime }}
+              </span>
+              <span class="text-base font-bold text-indigo-300 font-mono">:{{ liveSeconds }}</span>
+              <span class="text-[11px] font-black uppercase px-2 py-0.5 rounded bg-indigo-500/30 text-indigo-200 border border-indigo-400/30">
+                {{ livePeriod }}
+              </span>
+            </div>
+            <div class="flex items-center space-x-1.5 mt-1.5 text-slate-300 text-xs font-medium">
+              <svg class="w-3.5 h-3.5 text-indigo-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+              <span class="font-semibold">{{ liveDayName }}, {{ liveDate }}</span>
+            </div>
+          </div>
+
+          <!-- Shift Status Badge & Countdown -->
+          <div class="sm:text-right flex flex-col sm:items-end justify-center">
+            <span class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider"
+                  [ngClass]="{
+                    'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40': shiftStatus === 'IN_PROGRESS',
+                    'bg-amber-500/20 text-amber-300 border border-amber-500/40': shiftStatus === 'LUNCH_BREAK',
+                    'bg-blue-500/20 text-blue-300 border border-blue-500/40': shiftStatus === 'BEFORE_SHIFT',
+                    'bg-purple-500/20 text-purple-300 border border-purple-500/40': shiftStatus === 'AFTER_SHIFT'
+                  }">
+              <span class="w-2 h-2 rounded-full"
+                    [ngClass]="{
+                      'bg-emerald-400 animate-pulse': shiftStatus === 'IN_PROGRESS',
+                      'bg-amber-400 animate-pulse': shiftStatus === 'LUNCH_BREAK',
+                      'bg-blue-400': shiftStatus === 'BEFORE_SHIFT',
+                      'bg-purple-400': shiftStatus === 'AFTER_SHIFT'
+                    }"></span>
+              <span>{{ shiftStatusLabel }}</span>
+            </span>
+            <span class="text-[10px] text-slate-400 font-mono mt-1 font-semibold">{{ shiftRemainingText }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shift Progress Bar & Timeline Indicators -->
+      <div class="space-y-2 pt-1">
+        <div class="flex items-center justify-between text-xs">
+          <span class="font-extrabold text-slate-700 flex items-center space-x-1.5">
+            <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span>Daily Shift Progress</span>
+          </span>
+          <span class="font-black text-indigo-700 font-mono">{{ shiftProgress }}%</span>
+        </div>
+
+        <!-- Progress bar line -->
+        <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden p-0.5 border border-slate-200">
+          <div class="bg-gradient-to-r from-blue-500 via-indigo-600 to-purple-600 h-full rounded-full transition-all duration-700 ease-out"
+               [style.width.%]="shiftProgress"></div>
+        </div>
+
+        <!-- Mini Shift Metrics Trio -->
+        <div class="grid grid-cols-3 gap-2 pt-1 text-center">
+          <div class="p-2 rounded-lg bg-slate-50 border border-slate-200">
+            <span class="text-[9px] font-bold text-slate-500 uppercase block">Shift Hours</span>
+            <span class="text-xs font-black text-slate-800 font-mono">9.0h Gross</span>
+          </div>
+          <div class="p-2 rounded-lg bg-slate-50 border border-slate-200">
+            <span class="text-[9px] font-bold text-slate-500 uppercase block">Lunch Break</span>
+            <span class="text-xs font-black text-amber-700 font-mono">01:00-02:00 PM</span>
+          </div>
+          <div class="p-2 rounded-lg bg-slate-50 border border-slate-200">
+            <span class="text-[9px] font-bold text-slate-500 uppercase block">Timezone</span>
+            <span class="text-xs font-black text-indigo-700 font-mono truncate block" [title]="liveTimezone">{{ liveTimezone }}</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- SECTION 2: EMPLOYEE PROFILE INFORMATION CARD -->
+  <div class="fuse-card-light p-6 space-y-5 border-l-4 border-purple-600 shadow-sm">
+    <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+      <div class="flex items-center space-x-2">
+        <span class="px-2.5 py-0.5 rounded text-[10px] font-extrabold uppercase bg-purple-100 text-purple-800 tracking-wider">EMPLOYEE DOSSIER</span>
+        <h2 class="text-lg font-black text-slate-900">Profile Information</h2>
+      </div>
+
+      <span class="px-3 py-1 rounded-full text-xs font-extrabold bg-purple-100 text-purple-900 border border-purple-200">
+        Role: {{ employeeProfile.role }}
+      </span>
+    </div>
+
+    <!-- Profile Details Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+      
+      <!-- Left: Profile Image & Badges (4 cols) -->
+      <div class="md:col-span-4 flex flex-col items-center justify-center p-4 bg-slate-50 rounded-2xl border border-slate-200 text-center space-y-3">
+        <div class="relative">
+          <img [src]="employeeProfile.avatar" alt="Avatar" class="w-24 h-24 rounded-full object-cover ring-4 ring-purple-500/20 shadow-md" />
+          <span class="w-4 h-4 rounded-full bg-emerald-500 border-2 border-white absolute bottom-1 right-1" title="Online & Active"></span>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-black text-slate-900">{{ employeeProfile.name }}</h3>
+          <p class="text-xs font-extrabold text-purple-700 mt-0.5">{{ employeeProfile.designation }}</p>
+          <span class="inline-block mt-2 px-3 py-1 rounded-md bg-slate-200 text-slate-800 text-xs font-mono font-bold">ID: {{ employeeProfile.id }}</span>
+        </div>
+      </div>
+
+      <!-- Right: Detailed Information Attributes (8 cols) -->
+      <div class="md:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+        
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+          <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Full Name</span>
+          <p class="text-sm font-extrabold text-slate-900">{{ employeeProfile.name }}</p>
+        </div>
+
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+          <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Employee ID Code</span>
+          <p class="text-sm font-extrabold text-slate-900 font-mono">{{ employeeProfile.id }}</p>
+        </div>
+
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+          <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Designation Title</span>
+          <p class="text-sm font-extrabold text-blue-700">{{ employeeProfile.designation }}</p>
+        </div>
+
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+          <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Assigned Department</span>
+          <p class="text-sm font-extrabold text-slate-900">{{ employeeProfile.department }}</p>
+        </div>
+
+        <!-- Academic / Education Row (Full Width) -->
+        <div class="sm:col-span-2 p-3.5 rounded-xl bg-purple-50/70 border border-purple-200 space-y-1">
+          <div class="flex items-center space-x-2">
+            <svg class="w-4 h-4 text-purple-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 01-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>
+            <span class="text-[10px] font-black text-purple-900 uppercase tracking-wider">Education & Academic Qualifications</span>
+          </div>
+          <p class="text-xs font-bold text-slate-900 leading-relaxed">{{ employeeProfile.education }}</p>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SECTION 3: EMPLOYEE PERFORMANCE & PRODUCTIVITY SECTION -->
+  <div class="fuse-card-light p-6 space-y-5 border-l-4 border-emerald-600 shadow-sm">
+    <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+      <div class="flex items-center space-x-2">
+        <span class="px-2.5 py-0.5 rounded text-[10px] font-extrabold uppercase bg-emerald-100 text-emerald-800 tracking-wider">PERFORMANCE TELEMETRY</span>
+        <h2 class="text-lg font-black text-slate-900">Performance & Productivity Analytics</h2>
+      </div>
+
+      <span class="px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300">
+        ★ {{ performance.ratingLabel }} ({{ performance.overallScore }}%)
+      </span>
+    </div>
+
+    <!-- 4 Key Performance Metric Summary Cards -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Performance Rating</span>
+        <p class="text-2xl font-black text-emerald-700">{{ performance.overallScore }}%</p>
+        <span class="text-[10px] font-bold text-emerald-600">Top 5% Company-Wide</span>
+      </div>
+
+      <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Tasks Delivered</span>
+        <p class="text-2xl font-black text-slate-900">{{ performance.tasksCompleted }} <span class="text-xs font-bold text-slate-500">/ {{ performance.tasksCompleted + performance.tasksPending }}</span></p>
+        <span class="text-[10px] font-bold text-blue-600">{{ performance.taskCompletionRate }}% Velocity</span>
+      </div>
+
+      <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Punctuality Score</span>
+        <p class="text-2xl font-black text-purple-700">{{ performance.punctualityRate }}%</p>
+        <span class="text-[10px] font-bold text-purple-600">On-Time Arrival</span>
+      </div>
+
+      <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Code / Output Quality</span>
+        <p class="text-2xl font-black text-indigo-700">{{ performance.codeQualityScore }}%</p>
+        <span class="text-[10px] font-bold text-indigo-600">Zero Defect Rate</span>
+      </div>
+    </div>
+
+    <!-- KPI / OKR Progress Bars -->
+    <div class="space-y-4 pt-2">
+      <h3 class="text-xs font-black text-slate-800 uppercase tracking-wider">Quarterly KPI & Target Breakdown</h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div *ngFor="let kpi of performance.kpiProgress" class="p-4 rounded-xl bg-slate-50 border border-slate-200/90 space-y-2">
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-extrabold text-slate-900">{{ kpi.name }}</span>
+            <span class="font-black text-slate-900">{{ kpi.progress }}%</span>
+          </div>
+
+          <!-- Progress Bar Container -->
+          <div class="w-full h-3 rounded-full bg-slate-200 overflow-hidden">
+            <div [ngClass]="kpi.color" [style.width.%]="kpi.progress" class="h-full rounded-full transition-all duration-500"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Performance Narrative Box -->
+    <div class="p-4 rounded-xl bg-emerald-50/80 border border-emerald-200 text-xs space-y-1.5">
+      <div class="flex items-center space-x-2">
+        <span class="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase bg-emerald-200 text-emerald-900">AI FEEDBACK</span>
+        <span class="font-bold text-emerald-900">Performance Assessment & Workload Summary</span>
+      </div>
+      <p class="text-slate-800 leading-relaxed font-medium">
+        Alexander Vance demonstrates exceptional leadership and project execution velocity with a 94.8% performance index. Time punctuality is outstanding at 98.5%, with high team collaboration scores across all 12 enterprise panels.
+      </p>
+    </div>
+
+  </div>
+
+</div>
