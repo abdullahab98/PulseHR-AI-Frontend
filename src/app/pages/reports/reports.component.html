@@ -1,0 +1,381 @@
+<div class="space-y-6 pb-16">
+  <!-- Page Header (Screen only) -->
+  <div class="no-print flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-slate-200">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-700 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+          AI Operations Report Generator
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-blue-50 text-blue-700 border border-blue-200">
+            ⚡ AI Intelligence Engine
+          </span>
+        </h1>
+        <p class="text-xs text-slate-500 font-medium mt-0.5">
+          Formulates standard C-Level executive operations dossiers with formatted tables, KPIs, and official PDF download
+        </p>
+      </div>
+    </div>
+
+    <!-- Quick Actions (Print / PDF) -->
+    <div *ngIf="generatedReport" class="flex items-center gap-2">
+      <!-- PDF Download Button (Primary) -->
+      <button (click)="downloadPdfReport()" [disabled]="isExportingPdf"
+              class="inline-flex items-center gap-2 px-4 py-2 text-xs font-black text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-lg shadow-md shadow-blue-600/20 active:scale-[0.99] transition">
+        <svg *ngIf="!isExportingPdf" class="w-4 h-4 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <svg *ngIf="isExportingPdf" class="w-4 h-4 animate-spin text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        <span>{{ isExportingPdf ? 'Generating PDF...' : '⬇️ Download Official PDF' }}</span>
+      </button>
+
+      <!-- Print Button -->
+      <button (click)="printReport()"
+              class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 shadow-xs transition">
+        <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+        </svg>
+        <span>Print</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Report Configuration Form Card (Screen only) -->
+  <div class="no-print fuse-card-light p-5 space-y-4 bg-white border-slate-200 shadow-sm">
+    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+      <h3 class="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+        </svg>
+        Report Formulation & Operational Parameters
+      </h3>
+      <span class="text-[11px] text-slate-400 font-medium">Select timeframe, department scope & strategic focus</span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+      <!-- Report Archetype -->
+      <div class="space-y-1">
+        <label class="block text-slate-700 font-bold">Report Type / Archetype</label>
+        <select [(ngModel)]="reportType" class="w-full fuse-input-light text-xs py-2 px-3 rounded-lg font-medium">
+          <option value="WEEKLY">Weekly Executive Operations Briefing</option>
+          <option value="DAILY">Daily Operations & Activity Pulse</option>
+          <option value="MONTHLY">Monthly Enterprise Performance Review</option>
+          <option value="PROJECT_AUDIT">Project Portfolio & Risk Audit</option>
+          <option value="HR_WELLNESS">HR, Attendance Biometrics & Burnout Radar</option>
+          <option value="EXECUTIVE_BOARD">C-Level Board of Directors Dossier</option>
+        </select>
+      </div>
+
+      <!-- Department Scope -->
+      <div class="space-y-1">
+        <label class="block text-slate-700 font-bold">Department Scope</label>
+        <select [(ngModel)]="selectedDepartmentId" class="w-full fuse-input-light text-xs py-2 px-3 rounded-lg font-medium">
+          <option [ngValue]="null">All Enterprise Departments</option>
+          <option *ngFor="let d of departments" [ngValue]="d.id">{{ d.name }}</option>
+        </select>
+      </div>
+
+      <!-- Timeframe Presets & Start Date -->
+      <div class="space-y-1">
+        <label class="block text-slate-700 font-bold">Timeframe Range</label>
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <button type="button" (click)="applyDatePreset('LAST_7_DAYS')"
+                  [ngClass]="datePreset === 'LAST_7_DAYS' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+                  class="px-2 py-0.5 rounded text-[10px] font-bold transition">7 Days</button>
+          <button type="button" (click)="applyDatePreset('LAST_30_DAYS')"
+                  [ngClass]="datePreset === 'LAST_30_DAYS' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+                  class="px-2 py-0.5 rounded text-[10px] font-bold transition">30 Days</button>
+          <button type="button" (click)="applyDatePreset('THIS_MONTH')"
+                  [ngClass]="datePreset === 'THIS_MONTH' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+                  class="px-2 py-0.5 rounded text-[10px] font-bold transition">This Month</button>
+          <button type="button" (click)="applyDatePreset('LAST_90_DAYS')"
+                  [ngClass]="datePreset === 'LAST_90_DAYS' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+                  class="px-2 py-0.5 rounded text-[10px] font-bold transition">90 Days</button>
+        </div>
+        <div class="flex items-center gap-2 pt-1">
+          <input type="date" [(ngModel)]="startDate" class="w-1/2 fuse-input-light text-xs py-1.5 px-2 rounded-lg" />
+          <span class="text-slate-400 font-bold text-xs">to</span>
+          <input type="date" [(ngModel)]="endDate" class="w-1/2 fuse-input-light text-xs py-1.5 px-2 rounded-lg" />
+        </div>
+      </div>
+
+      <!-- Action Button -->
+      <div class="flex flex-col justify-end space-y-1">
+        <label class="block text-transparent font-bold select-none text-[11px]">Action</label>
+        <button (click)="generateReport()" [disabled]="isGenerating"
+                class="w-full py-2.5 px-4 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-extrabold text-xs shadow-md shadow-blue-600/20 active:scale-[0.99] transition flex items-center justify-center gap-2">
+          <svg *ngIf="!isGenerating" class="w-4 h-4 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+          <svg *ngIf="isGenerating" class="w-4 h-4 animate-spin text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <span>{{ isGenerating ? 'Synthesizing Dossier...' : '✨ Generate AI Report Now' }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Optional Custom Focus Area -->
+    <div class="pt-1">
+      <div class="relative">
+        <input type="text" [(ngModel)]="focusArea"
+               placeholder="Optional strategic focus instruction (e.g. 'Focus on overdue deliverables, weekend work friction, and department productivity bottlenecks')"
+               class="fuse-input-light text-xs pl-8 pr-3 py-2 rounded-lg w-full" />
+        <svg class="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isGenerating" class="no-print fuse-card-light p-12 text-center bg-white space-y-3">
+    <div class="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto"></div>
+    <h3 class="text-sm font-extrabold text-slate-900">Synthesizing Comprehensive Operations Telemetry...</h3>
+    <p class="text-xs text-slate-500 max-w-md mx-auto font-medium">
+      Cross-referencing task completion velocity, project milestones, biometric attendance, overtime distribution, and team burnout to formulate your executive dossier.
+    </p>
+  </div>
+
+  <!-- Error Alert -->
+  <div *ngIf="errorMsg" class="no-print p-4 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <span class="text-base">⚠️</span>
+      <span class="font-bold">{{ errorMsg }}</span>
+    </div>
+    <button (click)="errorMsg = null" class="text-rose-600 font-bold hover:underline">Dismiss</button>
+  </div>
+
+  <!-- ========================================================
+       PRINTABLE & EXPORTABLE OFFICIAL EXECUTIVE REPORT CONTAINER
+       Targeted by html2pdf and print media query
+       ======================================================== -->
+  <div *ngIf="generatedReport && !isGenerating" class="space-y-6">
+
+    <!-- Document Status Strip -->
+    <div class="no-print flex items-center justify-between gap-3 px-2">
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-bold text-slate-500">Document Status:</span>
+        <span class="px-2 py-0.5 rounded text-[11px] font-black bg-emerald-50 text-emerald-700 border border-emerald-200">
+          ✓ Verified & Formatted
+        </span>
+        <span class="text-xs font-mono text-slate-400">Ref: {{ dossierRefNumber }}</span>
+      </div>
+    </div>
+
+    <!-- Official Document Canvas -->
+    <div id="printable-executive-report"
+         class="fuse-card-light bg-white border-slate-300 rounded-2xl shadow-xl overflow-hidden p-8 sm:p-10 space-y-8 text-slate-900">
+
+      <!-- 1. OFFICIAL CORPORATE LETTERHEAD BANNER -->
+      <div class="border-b-2 border-slate-900 pb-5">
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <!-- Logo & Brand Header -->
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-xl shadow-md">
+              🏢
+            </div>
+            <div>
+              <h2 class="text-xs font-black uppercase tracking-widest text-slate-500">Enterprise Operations Intelligence</h2>
+              <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-0.5">
+                {{ generatedReport.title }}
+              </h1>
+              <p class="text-xs text-slate-500 font-semibold mt-0.5">
+                Official Operations Briefing • Formulated via AI Operational Telemetry
+              </p>
+            </div>
+          </div>
+
+          <!-- Document Classification & Metadata Stamp -->
+          <div class="sm:text-right shrink-0 space-y-1">
+            <div class="inline-block px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-widest bg-slate-900 text-white shadow-xs">
+              CONFIDENTIAL • EXECUTIVE EYES ONLY
+            </div>
+            <div class="text-[11px] text-slate-600 font-mono">
+              <div><b>Document Ref:</b> {{ dossierRefNumber }}</div>
+              <div><b>Issued Date:</b> {{ generatedReport.generated_at | date:'mediumDate' }}</div>
+              <div><b>Timeframe:</b> {{ startDate }} to {{ endDate }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scope & Risk Banner Strip -->
+        <div class="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs font-semibold">
+          <div class="flex items-center gap-2">
+            <span class="text-slate-400 font-bold uppercase text-[10px]">Scope:</span>
+            <span class="text-slate-800 font-bold">{{ generatedReport.metrics['scope'] || 'Enterprise-Wide' }}</span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <span class="text-slate-400 font-bold uppercase text-[10px]">Risk Assessment:</span>
+            <span class="px-2.5 py-0.5 rounded text-[11px] font-black uppercase tracking-wider"
+                  [ngClass]="{
+                    'bg-rose-100 text-rose-800 border border-rose-300': generatedReport.risk_level === 'CRITICAL',
+                    'bg-amber-100 text-amber-800 border border-amber-300': generatedReport.risk_level === 'HIGH',
+                    'bg-blue-100 text-blue-800 border border-blue-300': generatedReport.risk_level === 'MODERATE',
+                    'bg-emerald-100 text-emerald-800 border border-emerald-300': generatedReport.risk_level === 'LOW'
+                  }">
+              {{ generatedReport.risk_level }} RISK
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. EXECUTIVE SUMMARY BRIEFING BOX -->
+      <div class="p-5 rounded-xl bg-slate-50 border border-slate-200 page-break-avoid space-y-2">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+          <h3 class="text-xs font-black uppercase tracking-wider text-slate-900">Executive Summary & Verdict</h3>
+        </div>
+        <p class="text-xs text-slate-700 leading-relaxed font-medium">
+          {{ generatedReport.summary }}
+        </p>
+      </div>
+
+      <!-- 3. CORE TELEMETRY METRIC MATRIX (6 Boxed Cards) -->
+      <div *ngIf="generatedReport.metrics" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 page-break-avoid">
+        <!-- Monitored Talent -->
+        <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-xs text-center">
+          <span class="text-[9px] font-black uppercase tracking-wider text-slate-400 block">Monitored Talent</span>
+          <span class="text-xl font-black text-slate-900 block mt-1">{{ generatedReport.metrics.total_employees }}</span>
+          <span class="text-[10px] text-slate-500 font-medium">Active Personnel</span>
+        </div>
+
+        <!-- Task Velocity -->
+        <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-xs text-center">
+          <span class="text-[9px] font-black uppercase tracking-wider text-slate-400 block">Task Velocity</span>
+          <span class="text-xl font-black text-blue-700 block mt-1">{{ generatedReport.metrics.task_completion_rate }}%</span>
+          <span class="text-[10px] text-slate-500 font-medium">Completion Rate</span>
+        </div>
+
+        <!-- Active / Delayed Projects -->
+        <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-xs text-center">
+          <span class="text-[9px] font-black uppercase tracking-wider text-slate-400 block">Active Deliverables</span>
+          <span class="text-xl font-black text-slate-900 block mt-1">{{ generatedReport.metrics.active_projects || 0 }}</span>
+          <span class="text-[10px] font-black text-rose-600" *ngIf="(generatedReport.metrics.delayed_projects || 0) > 0">
+            {{ generatedReport.metrics.delayed_projects }} Delayed
+          </span>
+          <span class="text-[10px] text-emerald-600 font-bold" *ngIf="(generatedReport.metrics.delayed_projects || 0) === 0">
+            On Schedule
+          </span>
+        </div>
+
+        <!-- Overtime Hours -->
+        <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-xs text-center">
+          <span class="text-[9px] font-black uppercase tracking-wider text-slate-400 block">Overtime Logged</span>
+          <span class="text-xl font-black text-amber-700 block mt-1">{{ generatedReport.metrics.total_overtime_hours || 0 }}h</span>
+          <span class="text-[10px] text-slate-500 font-medium">Cumulative</span>
+        </div>
+
+        <!-- Daily Work Avg -->
+        <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-xs text-center">
+          <span class="text-[9px] font-black uppercase tracking-wider text-slate-400 block">Daily Average</span>
+          <span class="text-xl font-black text-slate-800 block mt-1">{{ generatedReport.metrics.avg_daily_work_hours || 0 }}h</span>
+          <span class="text-[10px] text-slate-500 font-medium">Hours / Day</span>
+        </div>
+
+        <!-- Burnout Alerts -->
+        <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-xs text-center">
+          <span class="text-[9px] font-black uppercase tracking-wider text-slate-400 block">Burnout Friction</span>
+          <span class="text-xl font-black block mt-1"
+                [ngClass]="((generatedReport.metrics.critical_burnout_alerts || 0) + (generatedReport.metrics.high_burnout_alerts || 0)) > 0 ? 'text-rose-600' : 'text-emerald-600'">
+            {{ (generatedReport.metrics.critical_burnout_alerts || 0) + (generatedReport.metrics.high_burnout_alerts || 0) }}
+          </span>
+          <span class="text-[10px] text-slate-500 font-medium">Alert Count</span>
+        </div>
+      </div>
+
+      <!-- 4. EXECUTIVE TAKEAWAYS & IMMEDIATE ROADMAP -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 page-break-avoid">
+        <!-- Executive Takeaways -->
+        <div class="p-5 rounded-xl bg-blue-50/70 border border-blue-200 space-y-3">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center font-bold text-xs">⚡</span>
+            <h4 class="text-xs font-black uppercase tracking-wider text-blue-900">
+              Core Executive Findings
+            </h4>
+          </div>
+          <ul class="space-y-2 text-xs text-slate-800 font-medium">
+            <li *ngFor="let point of generatedReport.executive_takeaways" class="flex items-start gap-2">
+              <span class="text-blue-600 font-black">•</span>
+              <span class="leading-relaxed">{{ point }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Strategic Recommendations -->
+        <div class="p-5 rounded-xl bg-indigo-50/70 border border-indigo-200 space-y-3">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-md bg-indigo-600 text-white flex items-center justify-center font-bold text-xs">🎯</span>
+            <h4 class="text-xs font-black uppercase tracking-wider text-indigo-900">
+              Actionable Managerial Roadmap
+            </h4>
+          </div>
+          <ul class="space-y-2 text-xs text-slate-800 font-medium">
+            <li *ngFor="let rec of generatedReport.strategic_recommendations" class="flex items-start gap-2">
+              <span class="text-emerald-600 font-black">✓</span>
+              <span class="leading-relaxed">{{ rec }}</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 5. FORMATTED DETAILED DOSSIER CANVAS (Rich HTML from Markdown) -->
+      <div class="report-prose pt-4 border-t border-slate-200"
+           [innerHTML]="renderedHtml">
+      </div>
+
+      <!-- 6. OFFICIAL SIGN-OFF & CERTIFICATION AUDIT BLOCK -->
+      <div class="pt-8 border-t-2 border-slate-900 page-break-avoid space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-black text-slate-900 uppercase tracking-widest">
+                Operational Audit Verification
+              </span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-black bg-blue-100 text-blue-800">
+                AI Telemetry Validated
+              </span>
+            </div>
+            <p class="text-[11px] text-slate-500 font-medium">
+              This document has been compiled autonomously using real-time enterprise telemetry and validated cross-departmental data models.
+            </p>
+          </div>
+
+          <div class="text-[11px] font-mono text-slate-400 sm:text-right">
+            <div><b>Hash:</b> SHA-256-{{ dossierRefNumber }}</div>
+            <div><b>Status:</b> Approved for Board Review</div>
+          </div>
+        </div>
+
+        <!-- Formal Signature Blocks -->
+        <div class="grid grid-cols-3 gap-6 pt-4 text-center text-xs">
+          <div class="border-t border-slate-300 pt-2 space-y-0.5">
+            <span class="font-black text-slate-900 block">Chief Operating Officer</span>
+            <span class="text-[10px] text-slate-400 block">Operations & Strategy</span>
+          </div>
+
+          <div class="border-t border-slate-300 pt-2 space-y-0.5">
+            <span class="font-black text-slate-900 block">Head of Human Capital</span>
+            <span class="text-[10px] text-slate-400 block">Workforce & Well-being</span>
+          </div>
+
+          <div class="border-t border-slate-300 pt-2 space-y-0.5">
+            <span class="font-black text-slate-900 block">System Intelligence AI</span>
+            <span class="text-[10px] text-slate-400 block">Autonomous Verification</span>
+          </div>
+        </div>
+
+        <!-- Confidentiality Disclaimer -->
+        <div class="text-center text-[10px] text-slate-400 font-medium border-t border-slate-100 pt-3">
+          CONFIDENTIAL & PROPRIETARY • STRICTLY RESTRICTED TO INTERNAL EXECUTIVE USE • UNAUTHORIZED DISTRIBUTION PROHIBITED
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

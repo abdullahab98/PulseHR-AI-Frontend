@@ -1,0 +1,593 @@
+<div class="p-6 max-w-7xl mx-auto space-y-6">
+
+  <!-- Header Banner -->
+  <div class="fuse-card-light p-6 flex flex-col md:flex-row md:items-center md:justify-between border-l-4 border-indigo-600 shadow-sm">
+    <div class="space-y-1">
+      <div class="flex items-center space-x-2">
+        <span class="px-2.5 py-0.5 rounded text-[10px] font-extrabold uppercase bg-indigo-100 text-indigo-800 tracking-wider">
+          ORGANIZATION SETUP
+        </span>
+        <span class="text-xs text-slate-500 font-semibold">• Role & Access Control (RBAC)</span>
+      </div>
+      <h1 class="text-2xl font-black text-slate-900 tracking-tight flex items-center space-x-2">
+        <span>🎖️ Designation & Permission Matrix</span>
+      </h1>
+      <p class="text-xs text-slate-600">
+        Create organizational designations bound to Office & Rank, and configure granular panel visibility & action permissions (Create, Edit, Delete).
+      </p>
+    </div>
+    <div class="mt-4 md:mt-0 flex items-center space-x-3">
+      <button *ngIf="canCreate" (click)="openAddModal()"
+        class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md hover:shadow-lg transition-all flex items-center space-x-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+        </svg>
+        <span>Create Designation</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Alerts -->
+  <div *ngIf="successMessage" class="fuse-card-light p-3 flex items-center space-x-2 border-l-4 border-emerald-500 bg-emerald-50">
+    <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+    </svg>
+    <span class="text-xs font-semibold text-emerald-800">{{ successMessage }}</span>
+  </div>
+
+  <div *ngIf="error" class="fuse-card-light p-3 flex items-center space-x-2 border-l-4 border-rose-500 bg-rose-50">
+    <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+    </svg>
+    <span class="text-xs font-semibold text-rose-800">{{ error }}</span>
+  </div>
+
+  <!-- Metrics & Stats Strip -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="fuse-card-light p-4 flex items-center space-x-4 border-t-2 border-indigo-500 shadow-sm">
+      <div class="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 text-lg">
+        🎖️
+      </div>
+      <div>
+        <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Designations</p>
+        <p class="text-xl font-extrabold text-slate-900">{{ designations.length }}</p>
+      </div>
+    </div>
+
+    <div class="fuse-card-light p-4 flex items-center space-x-4 border-t-2 border-sky-500 shadow-sm">
+      <div class="w-10 h-10 rounded-xl bg-sky-100 flex items-center justify-center text-sky-600 text-lg">
+        🏢
+      </div>
+      <div>
+        <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Configured Offices</p>
+        <p class="text-xl font-extrabold text-slate-900">{{ offices.length }}</p>
+      </div>
+    </div>
+
+    <div class="fuse-card-light p-4 flex items-center space-x-4 border-t-2 border-amber-500 shadow-sm">
+      <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 text-lg">
+        ⭐
+      </div>
+      <div>
+        <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Configured Ranks</p>
+        <p class="text-xl font-extrabold text-slate-900">{{ ranks.length }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters & Controls Bar -->
+  <div class="fuse-card-light p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3 shadow-sm">
+    <div class="flex flex-wrap items-center gap-3 flex-1">
+      <!-- Search -->
+      <div class="relative min-w-[200px] flex-1 max-w-xs">
+        <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input type="text" [(ngModel)]="searchQuery" placeholder="Search designations..."
+          class="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+      </div>
+
+      <!-- Office Filter -->
+      <div class="flex items-center space-x-1.5">
+        <span class="text-xs font-semibold text-slate-500">Office:</span>
+        <select [(ngModel)]="selectedOfficeId"
+          class="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <option value="ALL">All Offices</option>
+          <option *ngFor="let o of offices" [value]="o.id">{{ o.name }}</option>
+        </select>
+      </div>
+
+      <!-- Rank Filter -->
+      <div class="flex items-center space-x-1.5">
+        <span class="text-xs font-semibold text-slate-500">Rank:</span>
+        <select [(ngModel)]="selectedRankId"
+          class="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <option value="ALL">All Ranks</option>
+          <option *ngFor="let r of ranks" [value]="r.id">{{ r.name }}</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- View Toggle -->
+    <div class="flex items-center space-x-1 border border-slate-200 rounded-lg p-1 bg-slate-50 shrink-0">
+      <button (click)="viewMode = 'cards'"
+        [class.bg-white]="viewMode === 'cards'"
+        [class.shadow-sm]="viewMode === 'cards'"
+        [class.text-indigo-600]="viewMode === 'cards'"
+        [class.text-slate-500]="viewMode !== 'cards'"
+        class="px-2.5 py-1 text-xs font-bold rounded flex items-center space-x-1 transition-all">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+        </svg>
+        <span>Cards</span>
+      </button>
+      <button (click)="viewMode = 'table'"
+        [class.bg-white]="viewMode === 'table'"
+        [class.shadow-sm]="viewMode === 'table'"
+        [class.text-indigo-600]="viewMode === 'table'"
+        [class.text-slate-500]="viewMode !== 'table'"
+        class="px-2.5 py-1 text-xs font-bold rounded flex items-center space-x-1 transition-all">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+        </svg>
+        <span>Table</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="fuse-card-light p-12 text-center">
+    <div class="w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+    <p class="text-xs text-slate-500 font-medium">Loading designations & permissions...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && filteredDesignations.length === 0" class="fuse-card-light p-12 text-center space-y-4">
+    <div class="text-5xl">🎖️</div>
+    <h3 class="text-lg font-bold text-slate-800">No Designations Found</h3>
+    <p class="text-xs text-slate-500 max-w-md mx-auto">
+      Create designations for your offices and ranks, and configure which panels and buttons each designation has access to.
+    </p>
+    <button *ngIf="canCreate" (click)="openAddModal()"
+      class="px-4 py-2 rounded-lg bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 transition-all shadow-md">
+      Create First Designation
+    </button>
+  </div>
+
+  <!-- Cards View -->
+  <div *ngIf="!loading && filteredDesignations.length > 0 && viewMode === 'cards'"
+    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+    
+    <div *ngFor="let desig of filteredDesignations"
+      class="fuse-card-light p-5 border border-slate-200/80 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
+      
+      <div class="space-y-3">
+        <!-- Badges & Actions Header -->
+        <div class="flex items-start justify-between">
+          <div class="flex flex-wrap gap-1.5">
+            <span *ngIf="desig.office_name"
+              class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-sky-100 text-sky-800 flex items-center space-x-1">
+              <span>🏢</span>
+              <span class="truncate max-w-[120px]">{{ desig.office_name }}</span>
+            </span>
+            <span *ngIf="!desig.office_name"
+              class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600">
+              Universal Office
+            </span>
+
+            <span *ngIf="desig.rank_name"
+              class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-amber-100 text-amber-800 flex items-center space-x-1">
+              <span>⭐</span>
+              <span class="truncate max-w-[120px]">{{ desig.rank_name }}</span>
+            </span>
+            <span *ngIf="!desig.rank_name"
+              class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600">
+              Universal Rank
+            </span>
+
+            <span *ngIf="desig.employees_count !== undefined"
+              class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-purple-100 text-purple-800 flex items-center space-x-1"
+              title="Active employees with this designation">
+              <span>👥</span>
+              <span>{{ desig.employees_count }} Employee{{ desig.employees_count === 1 ? '' : 's' }}</span>
+            </span>
+          </div>
+
+          <div class="flex items-center space-x-1 shrink-0">
+            <button *ngIf="canEdit" (click)="openEditModal(desig)" title="Edit Designation & Permissions"
+              class="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </button>
+            <button *ngIf="canDelete" (click)="confirmDelete(desig)" title="Delete Designation"
+              class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Title & Description -->
+        <div>
+          <h3 class="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+            {{ desig.name }}
+          </h3>
+          <p class="text-xs text-slate-500 mt-1 line-clamp-2">
+            {{ desig.description || 'No description provided.' }}
+          </p>
+        </div>
+
+        <!-- Permissions Summary Strip -->
+        <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+          <span class="font-bold text-slate-600 flex items-center space-x-1">
+            <span>🔐 Active Access:</span>
+          </span>
+          <div class="flex items-center space-x-1.5">
+            <span class="px-2 py-0.5 rounded-full font-bold bg-indigo-50 text-indigo-700">
+              {{ getActivePermissionsCount(desig).panels }} Panels
+            </span>
+            <span class="px-2 py-0.5 rounded-full font-bold bg-emerald-50 text-emerald-700">
+              {{ getActivePermissionsCount(desig).actions }} Actions
+            </span>
+          </div>
+        </div>
+
+        <!-- Active Panels Badges -->
+        <div *ngIf="getActivePanels(desig).length > 0" class="flex flex-wrap gap-1 pt-1">
+          <span *ngFor="let ap of getActivePanels(desig) | slice:0:4"
+            class="px-1.5 py-0.5 rounded text-[9px] font-medium bg-slate-100 text-slate-700 flex items-center space-x-1"
+            [title]="ap.name + ' (' + ap.category + ')'">
+            <span>{{ ap.icon }}</span>
+            <span class="truncate max-w-[90px]">{{ ap.name }}</span>
+          </span>
+          <span *ngIf="getActivePanels(desig).length > 4" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-indigo-50 text-indigo-700">
+            +{{ getActivePanels(desig).length - 4 }} more
+          </span>
+        </div>
+      </div>
+
+      <!-- Quick Action Button -->
+      <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-end">
+        <button *ngIf="canEdit" (click)="openEditModal(desig)"
+          class="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center space-x-1 transition-colors">
+          <span>Configure Permissions</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table View -->
+  <div *ngIf="!loading && filteredDesignations.length > 0 && viewMode === 'table'"
+    class="fuse-card-light overflow-hidden border border-slate-200/80 rounded-2xl shadow-sm">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs">
+        <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 uppercase tracking-wider text-[10px]">
+          <tr>
+            <th class="px-4 py-3">Designation Title</th>
+            <th class="px-4 py-3">Office Location</th>
+            <th class="px-4 py-3">Rank Level</th>
+            <th class="px-4 py-3">Employees</th>
+            <th class="px-4 py-3">Panels & Actions</th>
+            <th class="px-4 py-3 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr *ngFor="let desig of filteredDesignations" class="hover:bg-slate-50/80 transition-colors">
+            <td class="px-4 py-3">
+              <p class="font-bold text-slate-900">{{ desig.name }}</p>
+              <p class="text-[10px] text-slate-500 truncate max-w-xs">{{ desig.description || 'No description' }}</p>
+            </td>
+            <td class="px-4 py-3">
+              <span *ngIf="desig.office_name" class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-sky-100 text-sky-800">
+                🏢 {{ desig.office_name }}
+              </span>
+              <span *ngIf="!desig.office_name" class="text-slate-400 italic">All Offices</span>
+            </td>
+            <td class="px-4 py-3">
+              <span *ngIf="desig.rank_name" class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-amber-100 text-amber-800">
+                ⭐ {{ desig.rank_name }}
+              </span>
+              <span *ngIf="!desig.rank_name" class="text-slate-400 italic">All Ranks</span>
+            </td>
+            <td class="px-4 py-3">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-700">
+                👥 {{ desig.employees_count || 0 }}
+              </span>
+            </td>
+            <td class="px-4 py-3">
+              <div class="space-y-1">
+                <div class="flex items-center space-x-1.5">
+                  <span class="px-2 py-0.5 rounded font-bold bg-indigo-50 text-indigo-700 text-[10px]">
+                    {{ getActivePermissionsCount(desig).panels }} Panels
+                  </span>
+                  <span class="px-2 py-0.5 rounded font-bold bg-emerald-50 text-emerald-700 text-[10px]">
+                    {{ getActivePermissionsCount(desig).actions }} Actions
+                  </span>
+                </div>
+                <div *ngIf="getActivePanels(desig).length > 0" class="flex flex-wrap gap-1 max-w-xs">
+                  <span *ngFor="let ap of getActivePanels(desig) | slice:0:3"
+                    class="px-1.5 py-0.5 rounded text-[9px] font-medium bg-slate-100 text-slate-600 inline-flex items-center space-x-0.5"
+                    [title]="ap.name">
+                    <span>{{ ap.icon }}</span>
+                    <span>{{ ap.name }}</span>
+                  </span>
+                  <span *ngIf="getActivePanels(desig).length > 3" class="text-[9px] font-bold text-indigo-600">
+                    +{{ getActivePanels(desig).length - 3 }}
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-3 text-right">
+              <div class="flex items-center justify-end space-x-1">
+                <button *ngIf="canEdit" (click)="openEditModal(desig)"
+                  class="px-2 py-1 rounded bg-indigo-50 text-indigo-600 font-bold hover:bg-indigo-100 transition-colors text-[11px]">
+                  Edit
+                </button>
+                <button *ngIf="canDelete" (click)="confirmDelete(desig)"
+                  class="px-2 py-1 rounded bg-rose-50 text-rose-600 font-bold hover:bg-rose-100 transition-colors text-[11px]">
+                  Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Create / Edit Designation Modal with Permission Matrix -->
+  <div *ngIf="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-4xl overflow-hidden my-6 flex flex-col max-h-[90vh]">
+      
+      <!-- Modal Header -->
+      <div class="px-6 py-4 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white flex items-center justify-between shrink-0">
+        <div class="flex items-center space-x-3">
+          <div class="w-9 h-9 rounded-xl bg-indigo-600/30 border border-indigo-500/40 flex items-center justify-center text-lg">
+            🎖️
+          </div>
+          <div>
+            <h2 class="text-base font-extrabold">{{ isEditing ? 'Edit Designation & Permissions' : 'Create New Designation' }}</h2>
+            <p class="text-[11px] text-slate-300">Set office, rank, and configure panel action permissions.</p>
+          </div>
+        </div>
+        <button (click)="closeModal()" class="text-slate-400 hover:text-white p-1 rounded-lg transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="p-6 overflow-y-auto space-y-6 flex-1 text-xs">
+        
+        <!-- Error inside modal -->
+        <div *ngIf="error" class="p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 font-medium">
+          {{ error }}
+        </div>
+
+        <!-- Section 1: Designation Details -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Designation Name -->
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Designation Title *</label>
+            <input type="text" [(ngModel)]="formData.name" placeholder="e.g. Senior Software Architect"
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          </div>
+
+          <!-- Office Select -->
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Assigned Office</label>
+            <select [(ngModel)]="formData.office_id"
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <option [ngValue]="null">-- Universal (All Offices) --</option>
+              <option *ngFor="let o of offices" [ngValue]="o.id">🏢 {{ o.name }}</option>
+            </select>
+          </div>
+
+          <!-- Rank Select -->
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Assigned Rank</label>
+            <select [(ngModel)]="formData.rank_id"
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <option [ngValue]="null">-- Universal (All Ranks) --</option>
+              <option *ngFor="let r of ranks" [ngValue]="r.id">⭐ {{ r.name }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Role Description / Scope</label>
+          <textarea [(ngModel)]="formData.description" rows="2" placeholder="Brief summary of duties, responsibilities, or authority level..."
+            class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+        </div>
+
+        <!-- Section 2: Permissions Matrix -->
+        <div class="space-y-3 pt-4 border-t border-slate-200">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+              <h3 class="font-bold text-sm text-slate-900 flex items-center space-x-2">
+                <span>🔐 Panel & Button Permissions Matrix</span>
+              </h3>
+              <p class="text-[11px] text-slate-500">
+                Grant or restrict panel visibility (View) and action buttons (Create, Edit, Delete) for this designation.
+              </p>
+            </div>
+
+            <!-- Global Quick Actions -->
+            <div class="flex items-center space-x-1.5 shrink-0">
+              <button type="button" (click)="grantAllPermissions()"
+                class="px-2.5 py-1 rounded bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold text-[10px] transition-colors">
+                ✓ Full Access All
+              </button>
+              <button type="button" (click)="viewOnlyAllPermissions()"
+                class="px-2.5 py-1 rounded bg-sky-100 hover:bg-sky-200 text-sky-800 font-bold text-[10px] transition-colors">
+                👁️ View Only All
+              </button>
+              <button type="button" (click)="clearAllPermissions()"
+                class="px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[10px] transition-colors">
+                ✕ Clear All
+              </button>
+            </div>
+          </div>
+
+          <!-- Matrix Table -->
+          <div class="border border-slate-200 rounded-xl overflow-hidden shadow-inner">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-100 text-slate-700 font-extrabold uppercase text-[10px] tracking-wider border-b border-slate-200">
+                <tr>
+                  <th class="px-4 py-2.5 w-1/3">Module / Panel</th>
+                  <th class="px-3 py-2.5 text-center w-24">
+                    <span class="text-sky-700">👁️ View</span>
+                  </th>
+                  <th class="px-3 py-2.5 text-center w-24">
+                    <span class="text-emerald-700">➕ Create</span>
+                  </th>
+                  <th class="px-3 py-2.5 text-center w-24">
+                    <span class="text-amber-700">✏️ Edit</span>
+                  </th>
+                  <th class="px-3 py-2.5 text-center w-24">
+                    <span class="text-rose-700">🗑️ Delete</span>
+                  </th>
+                  <th class="px-3 py-2.5 text-center w-24">Quick</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <ng-container *ngFor="let cat of categories">
+                  <!-- Category Subheader -->
+                  <tr class="bg-indigo-50/50">
+                    <td colspan="6" class="px-4 py-1.5 font-extrabold text-[10px] uppercase text-indigo-900 tracking-wider">
+                      {{ cat }}
+                    </td>
+                  </tr>
+
+                  <!-- Panel Rows in Category -->
+                  <tr *ngFor="let p of getPanelsForCategory(cat)"
+                    class="hover:bg-slate-50 transition-colors"
+                    [class.bg-slate-50]="getPermission(p.id, 'view')">
+                    
+                    <!-- Panel Info -->
+                    <td class="px-4 py-2.5">
+                      <div class="flex items-center space-x-2">
+                        <span class="text-base">{{ p.icon }}</span>
+                        <div>
+                          <p class="font-bold text-slate-800">{{ p.name }}</p>
+                          <p class="text-[9px] text-slate-400 font-mono">id: {{ p.id }}</p>
+                        </div>
+                      </div>
+                    </td>
+
+                    <!-- View Checkbox -->
+                    <td class="px-3 py-2.5 text-center">
+                      <label class="inline-flex items-center cursor-pointer">
+                        <input type="checkbox"
+                          [checked]="getPermission(p.id, 'view')"
+                          (change)="togglePermission(p.id, 'view')"
+                          class="w-4 h-4 rounded text-sky-600 focus:ring-sky-500 cursor-pointer" />
+                      </label>
+                    </td>
+
+                    <!-- Create Checkbox -->
+                    <td class="px-3 py-2.5 text-center">
+                      <label class="inline-flex items-center cursor-pointer">
+                        <input type="checkbox"
+                          [checked]="getPermission(p.id, 'create')"
+                          (change)="togglePermission(p.id, 'create')"
+                          class="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer" />
+                      </label>
+                    </td>
+
+                    <!-- Edit Checkbox -->
+                    <td class="px-3 py-2.5 text-center">
+                      <label class="inline-flex items-center cursor-pointer">
+                        <input type="checkbox"
+                          [checked]="getPermission(p.id, 'edit')"
+                          (change)="togglePermission(p.id, 'edit')"
+                          class="w-4 h-4 rounded text-amber-600 focus:ring-amber-500 cursor-pointer" />
+                      </label>
+                    </td>
+
+                    <!-- Delete Checkbox -->
+                    <td class="px-3 py-2.5 text-center">
+                      <label class="inline-flex items-center cursor-pointer">
+                        <input type="checkbox"
+                          [checked]="getPermission(p.id, 'delete')"
+                          (change)="togglePermission(p.id, 'delete')"
+                          class="w-4 h-4 rounded text-rose-600 focus:ring-rose-500 cursor-pointer" />
+                      </label>
+                    </td>
+
+                    <!-- Row Toggle Button -->
+                    <td class="px-3 py-2.5 text-center">
+                      <button type="button" (click)="togglePanelRow(p.id)"
+                        class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors">
+                        Toggle
+                      </button>
+                    </td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between shrink-0">
+        <span class="text-xs text-slate-500">
+          * Users assigned to this designation will receive these exact button & panel permissions upon login.
+        </span>
+        <div class="flex items-center space-x-3">
+          <button type="button" (click)="closeModal()"
+            class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-200 font-bold text-xs transition-colors">
+            Cancel
+          </button>
+          <button type="button" (click)="saveDesignation()" [disabled]="submitting"
+            class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md transition-all flex items-center space-x-2 disabled:opacity-50">
+            <span *ngIf="submitting" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            <span>{{ isEditing ? 'Save Changes' : 'Create Designation' }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div *ngIf="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-6 space-y-4">
+      <div class="flex items-center space-x-3 text-rose-600">
+        <div class="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center text-xl">
+          ⚠️
+        </div>
+        <div>
+          <h3 class="font-extrabold text-slate-900 text-base">Delete Designation</h3>
+          <p class="text-xs text-slate-500">This action cannot be undone.</p>
+        </div>
+      </div>
+
+      <p class="text-xs text-slate-600">
+        Are you sure you want to delete designation <strong class="text-slate-900">"{{ deletingDesignation?.name }}"</strong>? Employees currently assigned this designation will have their designation unlinked.
+      </p>
+
+      <div class="flex items-center justify-end space-x-3 pt-2">
+        <button (click)="cancelDelete()"
+          class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-bold text-xs transition-colors">
+          Cancel
+        </button>
+        <button (click)="executeDelete()" [disabled]="submitting"
+          class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow transition-all disabled:opacity-50 flex items-center space-x-1.5">
+          <span *ngIf="submitting" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+          <span>Delete Designation</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

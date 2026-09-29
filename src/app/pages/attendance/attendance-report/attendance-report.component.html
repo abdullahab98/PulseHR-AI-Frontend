@@ -1,0 +1,676 @@
+<div class="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-6 bg-[#f8fafc] min-h-screen text-slate-800">
+
+  <!-- ================= TOP HEADER & FILTER BAR ================= -->
+  <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-4 space-y-4">
+    
+    <!-- Title Line -->
+    <div class="flex items-center space-x-2 text-slate-900 font-extrabold text-base border-b border-slate-100 pb-3">
+      <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+      </svg>
+      <span>Attendance Report</span>
+    </div>
+
+    <!-- Filter Controls Row -->
+    <!-- Filter Controls Row (All in 1 Line) -->
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-3">
+      
+      <!-- Employee & Period Row -->
+      <div class="flex flex-wrap sm:flex-nowrap items-end gap-3">
+        
+        <!-- Employee Name Display / Search -->
+        <div class="w-full sm:w-[350px] shrink-0">
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-[11px] font-bold text-slate-500">Employee Name</label>
+            <span *ngIf="canSearchEmployees" class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 border border-purple-200">
+              👑 CEO / HR Search Active
+            </span>
+            <span *ngIf="!canSearchEmployees" class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+              🔒 My Attendance
+            </span>
+          </div>
+
+          <!-- HR & CEO: Interactive Autocomplete Search -->
+          <div *ngIf="canSearchEmployees" class="relative employee-search-container">
+            <!-- Search Input Box -->
+            <div class="relative flex items-center">
+              <div class="absolute left-3 pointer-events-none text-slate-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+              </div>
+
+              <input type="text"
+                     [value]="searchQuery"
+                     (input)="onEmployeeSearchInput($event)"
+                     (focus)="onEmployeeSearchFocus()"
+                     placeholder="Type min 3 characters to search..."
+                     class="w-full pl-9 pr-8 py-2 text-xs font-semibold text-slate-800 bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 shadow-2xs transition-all placeholder:text-slate-400" />
+
+              <!-- Indicator / Action Button -->
+              <div class="absolute right-2.5 flex items-center space-x-1">
+                <div *ngIf="isSearchingEmployees" class="w-3.5 h-3.5 border-2 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
+                <button *ngIf="!isSearchingEmployees && searchQuery" 
+                        type="button"
+                        (click)="clearEmployeeSearch()"
+                        title="Clear search"
+                        class="text-slate-400 hover:text-slate-600 p-0.5 rounded transition-colors text-xs leading-none font-bold">
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            <!-- Autocomplete Results Dropdown -->
+            <div *ngIf="showEmployeeDropdown"
+                 class="absolute left-0 top-full mt-1.5 w-full sm:w-[380px] bg-white rounded-xl border border-slate-200 shadow-xl z-50 max-h-80 overflow-y-auto py-1 backdrop-blur-xs divide-y divide-slate-100">
+              
+              <!-- When searching -->
+              <div *ngIf="isSearchingEmployees && searchedEmployees.length === 0" class="p-4 text-center text-xs text-slate-500 flex items-center justify-center space-x-2">
+                <div class="w-3.5 h-3.5 border-2 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
+                <span>Searching employees...</span>
+              </div>
+
+              <!-- When no results found -->
+              <div *ngIf="!isSearchingEmployees && searchedEmployees.length === 0 && searchQuery.trim().length >= 3"
+                   class="p-4 text-center text-xs text-slate-500">
+                <p class="font-semibold text-slate-700">No employees found</p>
+                <p class="text-[11px] text-slate-400 mt-0.5">No match found for "{{ searchQuery }}"</p>
+              </div>
+
+              <!-- Results list -->
+              <div *ngIf="searchedEmployees.length > 0" class="divide-y divide-slate-50">
+                <div class="px-3 py-1.5 bg-slate-50 text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                  <span>Matching Employees</span>
+                  <span class="text-teal-600 font-semibold">{{ searchedEmployees.length }} found</span>
+                </div>
+
+                <div *ngFor="let emp of searchedEmployees"
+                     (click)="selectEmployeeFromSearch(emp)"
+                     class="p-2.5 hover:bg-teal-50/80 cursor-pointer flex items-center space-x-3 transition-colors group">
+                  
+                  <!-- Employee Image in Circle -->
+                  <div class="w-9 h-9 rounded-full overflow-hidden shrink-0 border-2 border-teal-500/20 bg-slate-100 shadow-xs group-hover:border-teal-500/50">
+                    <img [src]="getEmployeeAvatar(emp)" 
+                         alt="" 
+                         class="w-full h-full object-cover" />
+                  </div>
+
+                  <!-- Name and Designation beneath name -->
+                  <div class="flex-1 min-w-0">
+                    <div class="text-xs font-bold text-slate-800 truncate group-hover:text-teal-700 flex items-center justify-between">
+                      <span class="truncate">{{ emp.first_name }} {{ emp.last_name }}</span>
+                      <span class="text-[10px] text-slate-400 font-mono shrink-0 ml-1">({{ emp.employee_code }})</span>
+                    </div>
+                    <!-- Designation beneath Name -->
+                    <div class="text-[11px] font-semibold text-teal-600 truncate mt-0.5">
+                      {{ emp.designation_name || emp.designation || 'Employee' }}
+                    </div>
+                    <div *ngIf="emp.department_name" class="text-[9px] text-slate-400 truncate">
+                      {{ emp.department_name }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Regular Employee: Read-only display of their own name -->
+          <div *ngIf="!canSearchEmployees" class="relative">
+            <div class="w-full px-3 py-2 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-between shadow-2xs">
+              <div class="flex items-center space-x-2 truncate">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span class="truncate">{{ selectedEmployee?.first_name }} {{ selectedEmployee?.last_name }} ({{ selectedEmployee?.employee_code }})</span>
+              </div>
+              <span class="text-[10px] text-teal-600 font-bold shrink-0">{{ selectedEmployee?.designation }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Period Date-Range Selector with < and > -->
+        <div class="w-full sm:w-auto shrink-0">
+          <label class="block text-[11px] font-bold text-slate-500 mb-1">Period</label>
+          <div class="flex items-center space-x-1 border border-slate-300 rounded-lg bg-white overflow-hidden shadow-2xs">
+            <button (click)="prevPeriod()" title="Previous Month"
+                    class="px-3 py-2 text-slate-600 hover:text-teal-600 hover:bg-slate-100 transition-colors font-bold text-xs">
+              &lt;
+            </button>
+            <div class="px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-50/50 border-x border-slate-200 select-none min-w-[200px] text-center">
+              {{ periodDisplay }}
+            </div>
+            <button (click)="nextPeriod()" title="Next Month"
+                    class="px-3 py-2 text-slate-600 hover:text-teal-600 hover:bg-slate-100 transition-colors font-bold text-xs">
+              &gt;
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons (CSV, PDF, All Employee CSV) -->
+      <div class="flex items-center gap-2 shrink-0">
+        <button (click)="exportCsv()" 
+                class="px-4 py-2 rounded-lg bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs font-bold transition-all shadow-sm flex items-center space-x-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+          <span>CSV</span>
+        </button>
+
+        <button (click)="printPdf()" 
+                class="px-4 py-2 rounded-lg bg-[#0f172a] hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-sm flex items-center space-x-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+          </svg>
+          <span>PDF</span>
+        </button>
+
+        <button *ngIf="canSearchEmployees" (click)="exportAllCsv()" 
+                class="px-4 py-2 rounded-lg bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs font-bold transition-all shadow-sm flex items-center space-x-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+          </svg>
+          <span>All Employee CSV</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= TOP SUMMARY DASHBOARD (3 CARDS) ================= -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+    
+    <!-- CARD 1: Employee Identity Card (Left) -->
+    <div class="lg:col-span-3 bg-white rounded-2xl border border-blue-100 shadow-sm p-5 flex flex-col items-center justify-center text-center relative overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-b from-teal-50/40 to-transparent pointer-events-none"></div>
+      
+      <!-- Avatar -->
+      <div class="w-20 h-20 rounded-full border-2 border-teal-500/30 overflow-hidden shadow-md mb-3 bg-slate-100 shrink-0">
+        <img [src]="getEmployeeAvatar(selectedEmployee)" 
+             alt="Avatar" class="w-full h-full object-cover" />
+      </div>
+
+      <h2 class="text-base font-black text-slate-900 leading-tight">
+        {{ selectedEmployee?.first_name }} {{ selectedEmployee?.last_name }}
+      </h2>
+      <p class="text-[11px] font-bold text-teal-600 mt-0.5">
+        {{ selectedEmployee?.designation || 'Technical Lead' }}
+      </p>
+      <p class="text-[10px] text-slate-500 font-medium leading-tight mt-0.5">
+        {{ selectedEmployee?.department_name || 'Office of the Information Technology' }}
+      </p>
+      <p class="text-[10px] text-slate-400 font-mono mt-0.5">
+        {{ selectedEmployee?.email || 'noor@seu.edu.bd' }}
+      </p>
+
+      <!-- Overview Button -->
+      <button (click)="goToOverview()"
+              class="mt-4 px-4 py-1.5 rounded-lg bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs font-bold flex items-center space-x-1.5 shadow-sm transition-all">
+        <span>👤</span>
+        <span>Overview</span>
+      </button>
+    </div>
+
+    <!-- CARD 2: Total Worked Hours & Metric Counters (Center) -->
+    <div class="lg:col-span-6 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col justify-between space-y-6">
+      
+      <!-- Two Huge Numbers on Top -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-center pt-2">
+        <div>
+          <div class="text-3xl sm:text-4xl font-black text-[#4338ca] tracking-tight font-mono">
+            {{ totalWorkedHours }}
+          </div>
+          <div class="text-xs font-bold text-slate-500 mt-1">Total Worked Hours</div>
+        </div>
+
+        <div>
+          <div class="text-3xl sm:text-4xl font-black text-[#059669] tracking-tight font-mono">
+            {{ totalWorkedDuringWorkingHours }}
+          </div>
+          <div class="text-xs font-bold text-slate-500 mt-1">Total Hours Worked During Working Hour</div>
+        </div>
+      </div>
+
+      <!-- Bottom 4 Stat Pill Boxes -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-slate-100">
+        
+        <div class="bg-slate-50/80 rounded-xl p-3 text-center border border-slate-200/60">
+          <div class="text-xl font-black text-slate-800">{{ totalPresentDays }}</div>
+          <div class="text-[10px] font-bold text-slate-500 mt-0.5">Total Present Days</div>
+        </div>
+
+        <div class="bg-slate-50/80 rounded-xl p-3 text-center border border-slate-200/60">
+          <div class="text-xl font-black text-slate-800">{{ totalLateDays }}</div>
+          <div class="text-[10px] font-bold text-slate-500 mt-0.5">Total Late Days</div>
+        </div>
+
+        <div class="bg-slate-50/80 rounded-xl p-3 text-center border border-slate-200/60">
+          <div class="text-xl font-black text-slate-800">{{ totalAbsentDays }}</div>
+          <div class="text-[10px] font-bold text-slate-500 mt-0.5">Total Absent Days</div>
+        </div>
+
+        <div class="bg-slate-50/80 rounded-xl p-3 text-center border border-slate-200/60">
+          <div class="text-xl font-black text-slate-800">{{ totalLeaveDays }}</div>
+          <div class="text-[10px] font-bold text-slate-500 mt-0.5">Total Leave Days</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- CARD 3: Report Duration & Key-Value Breakdown (Right) -->
+    <div class="lg:col-span-3 bg-[#f1f5f9]/70 rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col justify-between">
+      
+      <!-- Top Duration Header -->
+      <div class="text-center pb-3 border-b border-slate-200">
+        <div class="text-xs font-black text-slate-800 leading-tight">
+          {{ periodStartDate }}
+        </div>
+        <div class="text-slate-400 font-bold text-xs">-</div>
+        <div class="text-xs font-black text-slate-800 leading-tight">
+          {{ periodEndDate }}
+        </div>
+        <div class="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-wider">Report Duration</div>
+      </div>
+
+      <!-- Key-Value Breakdown List -->
+      <div class="space-y-2.5 text-[11px] font-semibold text-slate-600 pt-3">
+        <div class="flex items-center justify-between">
+          <span class="text-slate-500">Total Off Days</span>
+          <span class="font-bold text-slate-800">{{ totalOffDays }}</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-slate-500">Total Days</span>
+          <span class="font-bold text-slate-800">{{ totalDays }}</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-slate-500">Total Defined Working Hours During This Period</span>
+          <span class="font-bold text-slate-800 font-mono">{{ totalDefinedHoursPeriod }}</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-slate-500">Total Defined Working Hours For Total Present Days</span>
+          <span class="font-bold text-slate-800 font-mono">{{ totalDefinedHoursPresentDays }}</span>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ================= SECTION: ATTENDANCE DAILY REPORT ================= -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+    
+    <!-- Section Title Banner -->
+    <div class="py-2.5 text-center bg-teal-50/70 border-b border-teal-100">
+      <h3 class="text-xs font-black text-teal-800 uppercase tracking-wider">
+        Attendance Daily Report
+      </h3>
+    </div>
+
+    <!-- Table Container -->
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse text-[11px]">
+        <thead>
+          <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase text-[10px]">
+            <th class="py-2.5 px-3 border-r border-slate-200 text-center w-12">Week</th>
+            <th class="py-2.5 px-3 border-r border-slate-200 min-w-[110px]">Date</th>
+            <th class="py-2.5 px-3 border-r border-slate-200 text-center min-w-[90px]">Entry Time</th>
+            <th class="py-2.5 px-3 border-r border-slate-200 text-center min-w-[90px]">Leave Time</th>
+            <th class="py-2.5 px-3 border-r border-slate-200 text-center">Late Entry</th>
+            <th class="py-2.5 px-3 border-r border-slate-200 text-center">Early Leave</th>
+            <th class="py-2.5 px-3 border-r border-slate-200 text-center">Total Late Time</th>
+            <th class="py-2.5 px-3 border-r border-slate-200 text-center min-w-[90px]">Worked Time</th>
+            <th class="py-2.5 px-3 border-r border-slate-200 text-center min-w-[90px]">Weekly Worked</th>
+            <th class="py-2.5 px-3 border-r border-slate-200 text-center">Holiday</th>
+            <th class="py-2.5 px-3 border-r border-slate-200 text-center min-w-[80px]">Off Day</th>
+            <th class="py-2.5 px-3 border-r border-slate-200 text-center">Present</th>
+            <th class="py-2.5 px-3 border-r border-slate-200 text-center min-w-[100px]">Remarks</th>
+            <th class="py-2.5 px-3 border-r border-slate-200 text-center w-14">Details</th>
+            <th class="py-2.5 px-3 text-center w-14">Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200">
+          <tr *ngFor="let row of dailyRecords" 
+              class="hover:bg-slate-50/80 transition-colors"
+              [class.bg-slate-50]="row.holiday === 'Yes' || row.offDay === 'Off Day'">
+            
+            <!-- Week -->
+            <td class="py-2.5 px-3 border-r border-slate-200 text-center font-bold text-slate-700">
+              {{ row.week }}
+            </td>
+
+            <!-- Date & Day -->
+            <td class="py-2.5 px-3 border-r border-slate-200 leading-tight">
+              <div class="font-bold text-slate-900">{{ row.dateStr }}</div>
+              <div class="text-[10px] text-slate-500">{{ row.dayName }}</div>
+            </td>
+
+            <!-- Entry Time (Actual & Expected) -->
+            <td class="py-2.5 px-3 border-r border-slate-200 text-center leading-tight">
+              <div class="font-mono text-xs" 
+                   [class.text-rose-600]="row.isEntryLate"
+                   [class.font-bold]="row.isEntryLate"
+                   [class.text-slate-800]="!row.isEntryLate">
+                {{ row.entryActual }}
+              </div>
+              <div *ngIf="row.entryExpected !== row.entryActual" class="text-[10px] text-slate-400 font-mono">
+                {{ row.entryExpected }}
+              </div>
+            </td>
+
+            <!-- Leave Time (Actual & Expected) -->
+            <td class="py-2.5 px-3 border-r border-slate-200 text-center leading-tight">
+              <div class="font-mono text-xs text-slate-800">{{ row.leaveActual }}</div>
+              <div *ngIf="row.leaveExpected !== row.leaveActual" class="text-[10px] text-slate-400 font-mono">
+                {{ row.leaveExpected }}
+              </div>
+            </td>
+
+            <!-- Late Entry -->
+            <td class="py-2.5 px-3 border-r border-slate-200 text-center text-slate-500 font-mono">
+              {{ row.lateEntry }}
+            </td>
+
+            <!-- Early Leave -->
+            <td class="py-2.5 px-3 border-r border-slate-200 text-center text-slate-500 font-mono">
+              {{ row.earlyLeave }}
+            </td>
+
+            <!-- Total Late Time -->
+            <td class="py-2.5 px-3 border-r border-slate-200 text-center text-slate-500 font-mono">
+              {{ row.totalLateTime }}
+            </td>
+
+            <!-- Worked Time (Actual & Expected) -->
+            <td class="py-2.5 px-3 border-r border-slate-200 text-center leading-tight">
+              <div class="font-mono text-xs font-semibold text-slate-800">{{ row.workedActual }}</div>
+              <div *ngIf="row.workedExpected !== '-'" class="text-[10px] text-slate-400 font-mono">
+                {{ row.workedExpected }}
+              </div>
+            </td>
+
+            <!-- Weekly Worked (Cumulative & Target) -->
+            <td class="py-2.5 px-3 border-r border-slate-200 text-center leading-tight">
+              <div class="font-mono text-xs font-bold" [class.text-rose-600]="row.weeklyOvertime" [class.text-slate-800]="!row.weeklyOvertime">
+                {{ row.weeklyWorked }}
+              </div>
+              <div class="text-[10px] text-slate-400 font-mono">
+                {{ row.weeklyTarget }}
+              </div>
+            </td>
+
+            <!-- Holiday -->
+            <td class="py-2.5 px-3 border-r border-slate-200 text-center font-medium"
+                [class.text-rose-600]="row.holiday === 'Yes'"
+                [class.text-slate-600]="row.holiday !== 'Yes'">
+              {{ row.holiday }}
+            </td>
+
+            <!-- Off Day -->
+            <td class="py-2.5 px-3 border-r border-slate-200 text-center font-medium text-slate-700">
+              {{ row.offDay }}
+            </td>
+
+            <!-- Present -->
+            <td class="py-2.5 px-3 border-r border-slate-200 text-center font-medium"
+                [class.text-emerald-700]="row.present === 'Yes'"
+                [class.text-slate-400]="row.present !== 'Yes'">
+              {{ row.present }}
+            </td>
+
+            <!-- Remarks -->
+            <td class="py-2.5 px-3 border-r border-slate-200 text-center text-[10px] text-slate-600">
+              {{ row.remarks || '-' }}
+            </td>
+
+            <!-- Details (Red circular icon) -->
+            <td class="py-2.5 px-3 border-r border-slate-200 text-center">
+              <button *ngIf="row.hasDetails" (click)="viewRowDetails(row)" 
+                      title="View Details"
+                      class="w-5 h-5 rounded-full border border-rose-400 text-rose-500 hover:bg-rose-50 inline-flex items-center justify-center transition-colors">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+              </button>
+            </td>
+
+            <!-- Action -->
+            <td class="py-2.5 px-3 text-center text-slate-400">
+              <button title="Action" class="text-slate-400 hover:text-slate-700">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
+                </svg>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- ================= SECTION: CONSOLIDATED TIME OVERVIEW ================= -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden p-5 space-y-4">
+    
+    <!-- Title Banner -->
+    <div class="py-2 text-center bg-teal-50/70 border border-teal-100 rounded-xl mb-4">
+      <h3 class="text-xs font-black text-teal-800 uppercase tracking-wider">
+        Consolidated Time Overview
+      </h3>
+    </div>
+
+    <!-- Row of 6 Quota Cards -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+      
+      <!-- Card 1: Late Count -->
+      <div class="bg-slate-50/70 rounded-xl border border-slate-200 p-3.5 flex flex-col items-center justify-between text-center min-h-[110px]">
+        <div class="text-[11px] font-bold text-slate-700">Late Count</div>
+        <div class="text-3xl font-black text-rose-600 my-1 font-mono">{{ lateCountDays }}</div>
+        <div class="text-[10px] font-bold text-slate-500">Late Days</div>
+      </div>
+
+      <!-- Card 2: Earned -->
+      <div class="bg-slate-50/70 rounded-xl border border-slate-200 p-3.5 flex flex-col items-center justify-between text-center min-h-[110px]">
+        <div class="text-[10px] font-bold text-slate-500">Remaining: {{ leaveQuotas[0].remaining }}</div>
+        <div class="text-xl font-black my-1 font-mono">
+          <span class="text-emerald-600">{{ leaveQuotas[0].used }}</span>
+          <span class="text-slate-400 font-normal"> / </span>
+          <span class="text-[#7c3aed]">{{ leaveQuotas[0].total }}</span>
+        </div>
+        <div class="w-full py-0.5 rounded text-[10px] font-bold text-white bg-[#7c3aed]">
+          Earned
+        </div>
+      </div>
+
+      <!-- Card 3: Casual -->
+      <div class="bg-slate-50/70 rounded-xl border border-slate-200 p-3.5 flex flex-col items-center justify-between text-center min-h-[110px]">
+        <div class="text-[10px] font-bold text-slate-500">Remaining: {{ leaveQuotas[1].remaining }}</div>
+        <div class="text-xl font-black my-1 font-mono">
+          <span class="text-emerald-600">{{ leaveQuotas[1].used }}</span>
+          <span class="text-slate-400 font-normal"> / </span>
+          <span class="text-[#0f172a]">{{ leaveQuotas[1].total }}</span>
+        </div>
+        <div class="w-full py-0.5 rounded text-[10px] font-bold text-white bg-[#0f172a]">
+          Casual
+        </div>
+      </div>
+
+      <!-- Card 4: Extra Ordinary -->
+      <div class="bg-slate-50/70 rounded-xl border border-slate-200 p-3.5 flex flex-col items-center justify-between text-center min-h-[110px]">
+        <div class="text-[10px] font-bold text-slate-500">Remaining: {{ leaveQuotas[2].remaining }}</div>
+        <div class="text-xl font-black my-1 font-mono">
+          <span class="text-emerald-600">{{ leaveQuotas[2].used }}</span>
+          <span class="text-slate-400 font-normal"> / </span>
+          <span class="text-[#4338ca]">{{ leaveQuotas[2].total }}</span>
+        </div>
+        <div class="w-full py-0.5 rounded text-[10px] font-bold text-white bg-[#4338ca]">
+          Extra Ordinary
+        </div>
+      </div>
+
+      <!-- Card 5: Sick -->
+      <div class="bg-slate-50/70 rounded-xl border border-slate-200 p-3.5 flex flex-col items-center justify-between text-center min-h-[110px]">
+        <div class="text-[10px] font-bold text-slate-500">Remaining: {{ leaveQuotas[3].remaining }}</div>
+        <div class="text-xl font-black my-1 font-mono">
+          <span class="text-emerald-600">{{ leaveQuotas[3].used }}</span>
+          <span class="text-slate-400 font-normal"> / </span>
+          <span class="text-[#ea580c]">{{ leaveQuotas[3].total }}</span>
+        </div>
+        <div class="w-full py-0.5 rounded text-[10px] font-bold text-white bg-[#ea580c]">
+          Sick
+        </div>
+      </div>
+
+      <!-- Card 6: Duty -->
+      <div class="bg-slate-50/70 rounded-xl border border-slate-200 p-3.5 flex flex-col items-center justify-between text-center min-h-[110px]">
+        <div class="text-[10px] font-bold text-slate-500">Remaining: {{ leaveQuotas[4].remaining }}</div>
+        <div class="text-xl font-black my-1 font-mono">
+          <span class="text-emerald-600">{{ leaveQuotas[4].used }}</span>
+          <span class="text-slate-400 font-normal"> / </span>
+          <span class="text-[#059669]">{{ leaveQuotas[4].total }}</span>
+        </div>
+        <div class="w-full py-0.5 rounded text-[10px] font-bold text-white bg-[#059669]">
+          Duty
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Secondary Row Quota (Late) -->
+    <div class="w-full sm:w-44 pt-2">
+      <div class="bg-slate-50/70 rounded-xl border border-slate-200 p-3 flex flex-col items-center justify-between text-center min-h-[105px]">
+        <div class="text-[10px] font-bold text-slate-500">Remaining: {{ lateQuota.remaining }}</div>
+        <div class="text-xl font-black my-1 font-mono">
+          <span class="text-emerald-600">{{ lateQuota.used }}</span>
+          <span class="text-slate-400 font-normal"> / </span>
+          <span class="text-[#d97706]">{{ lateQuota.total }}</span>
+        </div>
+        <div class="w-full py-0.5 rounded text-[10px] font-bold text-white bg-[#d97706]">
+          Late
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ================= SECTION: YEARLY REPORT (2026) ================= -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+    
+    <!-- Top Green/Teal Header Banner -->
+    <div class="py-2.5 px-4 bg-[#0d9488] text-white flex items-center justify-between">
+      <h3 class="text-xs font-black uppercase tracking-wider">
+        Yearly Report ({{ selectedYear }})
+      </h3>
+      <div class="flex items-center space-x-3 text-[10px] font-medium text-teal-100">
+        <span class="flex items-center gap-1">
+          <span class="w-2 h-2 rounded-full bg-rose-400"></span> Weekend / Off
+        </span>
+        <span class="flex items-center gap-1">
+          <span class="px-1 bg-[#ea580c] text-white rounded text-[8px] font-bold">LE</span> Late Entry
+        </span>
+      </div>
+    </div>
+
+    <!-- 12-Month Matrix Table -->
+    <div class="overflow-x-auto p-4">
+      <table class="w-full border-collapse text-center text-[10px]">
+        <thead>
+          <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold">
+            <th class="py-2 px-2 text-left w-12 border-r border-slate-200">Month</th>
+            <th *ngFor="let day of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]" 
+                class="py-1.5 px-1 border-r border-slate-200 min-w-[28px]">
+              {{ day }}
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr *ngFor="let row of yearlyMatrix" class="hover:bg-slate-50/50">
+            <!-- Month Name -->
+            <td class="py-2 px-2 text-left font-bold text-slate-800 border-r border-slate-200 bg-slate-50/60">
+              {{ row.monthName }}
+            </td>
+
+            <!-- 31 Days Cells -->
+            <td *ngFor="let d of row.days" class="py-1.5 px-1 border-r border-slate-100 relative">
+              <ng-container *ngIf="d">
+                
+                <!-- If Late Entry LE badge -->
+                <div *ngIf="d.isLateEntry" 
+                     class="w-full py-0.5 rounded bg-[#ea580c] text-white font-extrabold text-[9px] shadow-xs leading-none">
+                  <div>{{ d.dayAbbr }}</div>
+                  <div class="text-[7px] font-black">LE</div>
+                </div>
+
+                <!-- Normal day cell -->
+                <div *ngIf="!d.isLateEntry" 
+                     [class.text-rose-600]="d.isWeekend"
+                     [class.font-bold]="d.isWeekend"
+                     [class.text-slate-600]="!d.isWeekend"
+                     class="leading-none select-none">
+                  {{ d.dayAbbr }}
+                </div>
+
+              </ng-container>
+              
+              <!-- Blank if day not in month -->
+              <span *ngIf="!d" class="text-slate-200">-</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- ================= ROW DETAILS MODAL ================= -->
+  <div *ngIf="selectedRowDetails" 
+       class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="w-full max-w-md bg-white rounded-2xl border border-slate-200 shadow-2xl p-6 space-y-4 animate-fade-in relative">
+      <button (click)="closeDetailsModal()" 
+              class="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
+        ✕
+      </button>
+
+      <div class="flex items-center space-x-2.5 pb-3 border-b border-slate-100">
+        <span class="p-2 rounded-xl bg-teal-50 text-teal-600 text-sm">📊</span>
+        <div>
+          <h4 class="text-sm font-bold text-slate-900">Attendance Log Details</h4>
+          <p class="text-[11px] text-slate-500">{{ selectedRowDetails.dateStr }} ({{ selectedRowDetails.dayName }})</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 text-xs">
+        <div class="p-2.5 bg-slate-50 rounded-xl">
+          <span class="text-[10px] font-bold text-slate-500 uppercase">Entry Time</span>
+          <div class="font-bold text-slate-900 mt-0.5 font-mono">{{ selectedRowDetails.entryActual }}</div>
+          <div class="text-[10px] text-slate-400 font-mono">Expected: {{ selectedRowDetails.entryExpected }}</div>
+        </div>
+
+        <div class="p-2.5 bg-slate-50 rounded-xl">
+          <span class="text-[10px] font-bold text-slate-500 uppercase">Leave Time</span>
+          <div class="font-bold text-slate-900 mt-0.5 font-mono">{{ selectedRowDetails.leaveActual }}</div>
+          <div class="text-[10px] text-slate-400 font-mono">Expected: {{ selectedRowDetails.leaveExpected }}</div>
+        </div>
+
+        <div class="p-2.5 bg-slate-50 rounded-xl">
+          <span class="text-[10px] font-bold text-slate-500 uppercase">Worked Hours</span>
+          <div class="font-bold text-emerald-600 mt-0.5 font-mono">{{ selectedRowDetails.workedActual }}</div>
+        </div>
+
+        <div class="p-2.5 bg-slate-50 rounded-xl">
+          <span class="text-[10px] font-bold text-slate-500 uppercase">Status</span>
+          <div class="font-bold mt-0.5" [class.text-emerald-600]="selectedRowDetails.present === 'Yes'">
+            {{ selectedRowDetails.present === 'Yes' ? 'Present' : 'Absent/Off' }}
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-slate-100 flex justify-end">
+        <button (click)="closeDetailsModal()" 
+                class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,146 @@
+<div class="space-y-6">
+  <!-- Page Header -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-2 border-b border-slate-200">
+    <div>
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-purple-500/20">
+          <span class="text-lg">📝</span>
+        </div>
+        <div>
+          <h1 class="text-2xl font-black text-slate-900 tracking-tight">Apply for New Time Slot</h1>
+          <p class="text-xs text-slate-500 font-medium mt-0.5">Submit employee shift adjustment requests & manage approval pipeline</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Status Pill -->
+    <div class="flex items-center space-x-2 text-xs font-semibold">
+      <span class="px-3 py-1.5 rounded-xl bg-purple-50 text-purple-700 border border-purple-200 shadow-2xs">
+        Panel 4 of 5
+      </span>
+    </div>
+  </div>
+
+
+  <!-- Split Grid: Form + List -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Left Column: Application Form -->
+    <div class="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+      <div class="pb-3 border-b border-slate-100">
+        <h3 class="text-sm font-bold text-slate-900">Shift Change Application Form</h3>
+        <p class="text-xs text-slate-500 mt-0.5">Submit request to transition to an alternative office time slot or shift</p>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Applying Employee</label>
+          <select [(ngModel)]="newSlotRequest.employee_id"
+                  class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+            <option *ngFor="let emp of employees" [ngValue]="emp.id">
+              {{ emp.first_name }} {{ emp.last_name }} ({{ emp.employee_code }})
+            </option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Target Time Slot / Shift</label>
+          <select [(ngModel)]="newSlotRequest.time_slot_id"
+                  class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+            <option *ngFor="let slot of timeSlots" [value]="slot.id">
+              {{ slot.name }} ({{ slot.start_time }} - {{ slot.end_time }})
+            </option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Effective From Date</label>
+          <input type="date" [(ngModel)]="newSlotRequest.effective_from"
+                 class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Reason / Justification</label>
+          <textarea [(ngModel)]="newSlotRequest.reason" rows="3"
+                    placeholder="e.g. Relocated residence closer to office branch; preferred morning timing."
+                    class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"></textarea>
+        </div>
+
+        <button (click)="submitSlotChangeRequest()"
+                class="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow-md shadow-purple-500/20 transition-all flex items-center justify-center space-x-1.5">
+          <span>Submit Shift Application</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Right Column: Submitted Slot Requests -->
+    <div class="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900">Submitted Shift Change Requests</h3>
+          <p class="text-xs text-slate-500 mt-0.5">Tracking recent requests and department approvals</p>
+        </div>
+
+        <div class="flex items-center space-x-1.5">
+          <button (click)="slotAppFilterStatus = 'ALL'; loadSlotApplications()"
+                  [class.bg-slate-800]="slotAppFilterStatus === 'ALL'"
+                  [class.text-white]="slotAppFilterStatus === 'ALL'"
+                  [class.bg-slate-100]="slotAppFilterStatus !== 'ALL'"
+                  class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all">
+            All
+          </button>
+          <button (click)="slotAppFilterStatus = 'PENDING'; loadSlotApplications()"
+                  [class.bg-amber-600]="slotAppFilterStatus === 'PENDING'"
+                  [class.text-white]="slotAppFilterStatus === 'PENDING'"
+                  [class.bg-amber-50]="slotAppFilterStatus !== 'PENDING'"
+                  class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all text-amber-700">
+            Pending
+          </button>
+        </div>
+      </div>
+
+      <div class="divide-y divide-slate-100">
+        <div *ngFor="let sApp of slotApplications" class="py-3.5 first:pt-0 last:pb-0 flex items-start justify-between gap-3">
+          <div class="space-y-1 flex-1">
+            <div class="flex items-center space-x-2">
+              <span class="font-bold text-xs text-slate-900">{{ sApp.employee_name }}</span>
+              <span class="text-slate-300">•</span>
+              <span class="text-purple-700 font-bold text-xs">Target: {{ sApp.time_slot_name }}</span>
+            </div>
+            <p class="text-xs text-slate-500 font-medium leading-relaxed">{{ sApp.reason }}</p>
+            <div class="flex items-center space-x-3 text-[10px] text-slate-400 font-medium">
+              <span>Effective Date: <strong class="text-slate-700">{{ sApp.effective_from }}</strong></span>
+            </div>
+          </div>
+
+          <div class="flex flex-col items-end space-y-2 shrink-0">
+            <span [ngClass]="{
+              'bg-amber-50 text-amber-700 border-amber-200': sApp.status === 'PENDING',
+              'bg-emerald-50 text-emerald-700 border-emerald-200': sApp.status === 'APPROVED',
+              'bg-rose-50 text-rose-700 border-rose-200': sApp.status === 'REJECTED'
+            }" class="px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border">
+              {{ sApp.status }}
+            </span>
+
+            <div *ngIf="sApp.status === 'PENDING'" class="flex items-center space-x-1">
+              <button (click)="updateSlotAppStatus(sApp.id, 'APPROVED')" title="Approve"
+                      class="px-2 py-0.5 rounded bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-[10px] font-bold transition-colors">
+                ✓
+              </button>
+              <button (click)="updateSlotAppStatus(sApp.id, 'REJECTED')" title="Reject"
+                      class="px-2 py-0.5 rounded bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[10px] font-bold transition-colors">
+                ✕
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="!slotApplications.length" class="py-8 text-center text-slate-400 text-xs font-semibold">
+          No time slot requests recorded.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
