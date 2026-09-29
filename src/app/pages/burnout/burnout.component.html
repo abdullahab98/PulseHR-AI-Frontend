@@ -1,0 +1,517 @@
+<div class="space-y-6 pb-12">
+  <!-- Page Header -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-slate-200">
+    <div>
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-rose-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-rose-500/20">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+            Burnout & Psychological Radar
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-indigo-50 text-indigo-700 border border-indigo-200">
+              ⚡ AI Behavioral Telemetry
+            </span>
+          </h1>
+          <p class="text-xs text-slate-500 font-medium mt-0.5">
+            Real-time biometric & behavioral AI telemetry analyzing overtime, weekend shifts, task friction, and work-life balance
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <button (click)="loadAllData()" [disabled]="loading"
+              class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 shadow-sm transition">
+        <svg class="w-4 h-4 text-slate-500" [class.animate-spin]="loading" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        <span>{{ loading ? 'Analyzing...' : 'Refresh AI Analytics' }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Executive Health KPI Banner -->
+  <div *ngIf="summary" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Total Monitored -->
+    <div class="fuse-card-light p-4 bg-gradient-to-br from-white to-slate-50 border-slate-200">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Monitored Personnel</span>
+        <span class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs">
+          👥
+        </span>
+      </div>
+      <div class="mt-2 flex items-baseline gap-2">
+        <span class="text-2xl font-black text-slate-900">{{ summary.total_evaluated }}</span>
+        <span class="text-xs font-semibold text-slate-500">Active Talent</span>
+      </div>
+      <p class="text-[11px] text-slate-500 mt-1">100% active telemetry feed</p>
+    </div>
+
+    <!-- Critical & High Risk Alerts -->
+    <div class="fuse-card-light p-4 bg-gradient-to-br from-rose-50/50 to-white border-rose-200">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-bold uppercase tracking-wider text-rose-700">High Risk Alerts</span>
+        <span class="w-7 h-7 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center font-bold text-xs">
+          ⚠️
+        </span>
+      </div>
+      <div class="mt-2 flex items-baseline gap-2">
+        <span class="text-2xl font-black text-rose-700">{{ summary.critical_count + summary.high_count }}</span>
+        <span class="text-xs font-bold text-rose-600">({{ summary.critical_count }} Critical)</span>
+      </div>
+      <p class="text-[11px] text-rose-600/80 mt-1">Urgent manager intervention needed</p>
+    </div>
+
+    <!-- Average Burnout Gauge -->
+    <div class="fuse-card-light p-4 bg-gradient-to-br from-white to-amber-50/40 border-amber-200">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-bold uppercase tracking-wider text-amber-700">Avg Burnout Index</span>
+        <span class="w-7 h-7 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center font-bold text-xs">
+          🔥
+        </span>
+      </div>
+      <div class="mt-2 flex items-baseline gap-2">
+        <span class="text-2xl font-black text-slate-900">{{ summary.avg_burnout_score }}</span>
+        <span class="text-xs font-bold text-slate-500">/ 100</span>
+      </div>
+      <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden mt-2">
+        <div class="h-full rounded-full transition-all duration-500"
+             [style.width.%]="summary.avg_burnout_score"
+             [ngClass]="summary.avg_burnout_score > 60 ? 'bg-rose-500' : (summary.avg_burnout_score > 35 ? 'bg-amber-500' : 'bg-emerald-500')"></div>
+      </div>
+    </div>
+
+    <!-- Work-Life Balance Index -->
+    <div class="fuse-card-light p-4 bg-gradient-to-br from-white to-emerald-50/50 border-emerald-200">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-bold uppercase tracking-wider text-emerald-700">Work-Life Score</span>
+        <span class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-xs">
+          🌿
+        </span>
+      </div>
+      <div class="mt-2 flex items-baseline gap-2">
+        <span class="text-2xl font-black text-emerald-700">{{ summary.company_work_life_balance }}</span>
+        <span class="text-xs font-bold text-slate-500">/ 100</span>
+      </div>
+      <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden mt-2">
+        <div class="h-full rounded-full bg-emerald-500 transition-all duration-500"
+             [style.width.%]="summary.company_work_life_balance"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Executive Pulse Narrative -->
+  <div *ngIf="summary && summary.executive_summary" class="fuse-card-light p-4 bg-slate-900 text-white border-slate-800 shadow-md">
+    <div class="flex items-start gap-3">
+      <div class="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center shrink-0 mt-0.5">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+        </svg>
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center justify-between gap-2">
+          <h4 class="text-xs font-black uppercase tracking-wider text-indigo-400">AI Executive Diagnostic Summary</h4>
+          <span class="text-[10px] text-slate-400 font-mono">Live Synthesized</span>
+        </div>
+        <p class="text-xs text-slate-200 leading-relaxed mt-1 font-medium">{{ summary.executive_summary }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter & Search Toolbar -->
+  <div class="fuse-card-light p-4 bg-white space-y-3">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+      <!-- Risk Pills -->
+      <div class="flex items-center gap-1.5 flex-wrap">
+        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">Risk:</span>
+        <button (click)="selectedRiskFilter = 'ALL'"
+                [ngClass]="selectedRiskFilter === 'ALL' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+                class="px-2.5 py-1 rounded-md text-xs font-bold transition">
+          All ({{ burnoutItems.length }})
+        </button>
+        <button (click)="selectedRiskFilter = 'CRITICAL'"
+                [ngClass]="selectedRiskFilter === 'CRITICAL' ? 'bg-rose-600 text-white' : 'bg-rose-50 text-rose-700 hover:bg-rose-100'"
+                class="px-2.5 py-1 rounded-md text-xs font-bold transition">
+          Critical
+        </button>
+        <button (click)="selectedRiskFilter = 'HIGH'"
+                [ngClass]="selectedRiskFilter === 'HIGH' ? 'bg-amber-600 text-white' : 'bg-amber-50 text-amber-700 hover:bg-amber-100'"
+                class="px-2.5 py-1 rounded-md text-xs font-bold transition">
+          High
+        </button>
+        <button (click)="selectedRiskFilter = 'MEDIUM'"
+                [ngClass]="selectedRiskFilter === 'MEDIUM' ? 'bg-blue-600 text-white' : 'bg-blue-50 text-blue-700 hover:bg-blue-100'"
+                class="px-2.5 py-1 rounded-md text-xs font-bold transition">
+          Medium
+        </button>
+        <button (click)="selectedRiskFilter = 'LOW'"
+                [ngClass]="selectedRiskFilter === 'LOW' ? 'bg-emerald-600 text-white' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'"
+                class="px-2.5 py-1 rounded-md text-xs font-bold transition">
+          Low
+        </button>
+      </div>
+
+      <!-- Search & Selects -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <!-- Search -->
+        <div class="relative min-w-[200px]">
+          <input type="text" [(ngModel)]="searchQuery" placeholder="Search employee, title..."
+                 class="fuse-input-light text-xs pl-8 pr-3 py-1.5 rounded-lg w-full" />
+          <svg class="w-4 h-4 text-slate-400 absolute left-2.5 top-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+
+        <!-- Department Filter -->
+        <select [(ngModel)]="selectedDepartment" class="fuse-input-light text-xs py-1.5 px-2.5 rounded-lg">
+          <option value="ALL">All Departments</option>
+          <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
+        </select>
+
+        <!-- Sort By -->
+        <select [(ngModel)]="sortBy" class="fuse-input-light text-xs py-1.5 px-2.5 rounded-lg">
+          <option value="RISK_DESC">Highest Burnout First</option>
+          <option value="RISK_ASC">Lowest Burnout First</option>
+          <option value="OVERTIME_DESC">Highest Overtime</option>
+          <option value="WLB_ASC">Lowest Work-Life Balance</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex flex-col items-center justify-center py-16">
+    <div class="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+    <p class="text-xs font-bold text-slate-600 mt-3">Synthesizing live employee telemetry with AI Engine...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && filteredItems.length === 0" class="fuse-card-light p-12 text-center bg-white">
+    <p class="text-sm font-bold text-slate-600">No employees match your current filter criteria.</p>
+    <button (click)="selectedRiskFilter = 'ALL'; selectedDepartment = 'ALL'; searchQuery = ''"
+            class="mt-3 text-xs font-bold text-indigo-600 hover:underline">
+      Clear all filters
+    </button>
+  </div>
+
+  <!-- Employee Burnout Cards Grid -->
+  <div *ngIf="!loading && filteredItems.length > 0" class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+    <div *ngFor="let item of filteredItems"
+         class="fuse-card-light p-5 space-y-4 relative hover:shadow-lg transition-all border-slate-200 bg-white">
+
+      <!-- Header: Avatar, Name, Department & Health Status Badge -->
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center font-black text-white text-base shadow-sm shrink-0"
+               [ngClass]="{
+                 'bg-gradient-to-tr from-rose-600 to-red-500': item.risk_level === 'CRITICAL',
+                 'bg-gradient-to-tr from-amber-600 to-orange-500': item.risk_level === 'HIGH',
+                 'bg-gradient-to-tr from-blue-600 to-cyan-500': item.risk_level === 'MEDIUM',
+                 'bg-gradient-to-tr from-emerald-600 to-teal-500': item.risk_level === 'LOW'
+               }">
+            {{ item.employee_name.charAt(0) }}
+          </div>
+          <div>
+            <h3 class="text-base font-black text-slate-900 leading-snug flex items-center gap-1.5">
+              {{ item.employee_name }}
+              <span *ngIf="item.retention_risk === 'CRITICAL' || item.retention_risk === 'HIGH'"
+                    class="text-[10px] font-black uppercase px-1.5 py-0.2 rounded bg-rose-100 text-rose-700 border border-rose-200"
+                    title="High Attrition Flight Risk">
+                Flight Risk
+              </span>
+            </h3>
+            <p class="text-xs text-slate-500 font-semibold">{{ item.designation }} • <span class="text-blue-700">{{ item.department_name }}</span></p>
+          </div>
+        </div>
+
+        <div class="text-right shrink-0">
+          <span [ngClass]="{
+            'bg-rose-100 text-rose-800 border-rose-300': item.risk_level === 'CRITICAL',
+            'bg-orange-100 text-orange-800 border-orange-300': item.risk_level === 'HIGH',
+            'bg-blue-100 text-blue-800 border-blue-300': item.risk_level === 'MEDIUM',
+            'bg-emerald-100 text-emerald-800 border-emerald-300': item.risk_level === 'LOW'
+          }" class="px-2.5 py-1 rounded-md text-[11px] font-black border uppercase tracking-wider inline-block">
+            {{ item.risk_level }} ({{ item.burnout_score }}/100)
+          </span>
+          <p class="text-[10px] font-bold text-slate-500 mt-1">{{ item.health_status }}</p>
+        </div>
+      </div>
+
+      <!-- Gauges: Burnout Score & Work-Life Balance -->
+      <div class="grid grid-cols-2 gap-3 pt-1">
+        <div class="space-y-1">
+          <div class="flex justify-between text-[11px] font-bold text-slate-600">
+            <span>Burnout Friction</span>
+            <span class="font-extrabold" [ngClass]="item.burnout_score > 60 ? 'text-rose-600' : 'text-slate-800'">
+              {{ item.burnout_score }}%
+            </span>
+          </div>
+          <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+            <div class="h-full rounded-full transition-all duration-300"
+                 [style.width.%]="item.burnout_score"
+                 [ngClass]="item.burnout_score > 70 ? 'bg-rose-600' : (item.burnout_score > 40 ? 'bg-amber-500' : 'bg-emerald-500')"></div>
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <div class="flex justify-between text-[11px] font-bold text-slate-600">
+            <span>Work-Life Balance</span>
+            <span class="font-extrabold" [ngClass]="item.work_life_balance_score < 40 ? 'text-rose-600' : 'text-emerald-700'">
+              {{ item.work_life_balance_score }}%
+            </span>
+          </div>
+          <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+            <div class="h-full rounded-full bg-emerald-500 transition-all duration-300"
+                 [style.width.%]="item.work_life_balance_score"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Behavioral Telemetry Grid (6 Metrics) -->
+      <div class="grid grid-cols-3 sm:grid-cols-6 gap-2 text-center p-3 rounded-xl bg-slate-50 border border-slate-200">
+        <div>
+          <span class="text-slate-400 block text-[9px] font-extrabold uppercase">Overtime</span>
+          <span class="font-black text-amber-700 text-xs">{{ item.overtime_hours_month }}h</span>
+        </div>
+        <div>
+          <span class="text-slate-400 block text-[9px] font-extrabold uppercase">Late Check-in</span>
+          <span class="font-black text-rose-700 text-xs">{{ item.late_arrivals_count }}x</span>
+        </div>
+        <div>
+          <span class="text-slate-400 block text-[9px] font-extrabold uppercase">Weekend Days</span>
+          <span class="font-black text-purple-700 text-xs">{{ item.weekend_work_days }}d</span>
+        </div>
+        <div>
+          <span class="text-slate-400 block text-[9px] font-extrabold uppercase">Active Tasks</span>
+          <span class="font-black text-blue-700 text-xs">{{ item.pending_tasks_count }}</span>
+        </div>
+        <div>
+          <span class="text-slate-400 block text-[9px] font-extrabold uppercase">Overdue Tasks</span>
+          <span class="font-black text-rose-600 text-xs">{{ item.overdue_tasks_count }}</span>
+        </div>
+        <div>
+          <span class="text-slate-400 block text-[9px] font-extrabold uppercase">Days Since Leave</span>
+          <span class="font-black text-slate-700 text-xs">{{ item.days_since_last_leave }}d</span>
+        </div>
+      </div>
+
+      <!-- Key Stressors Tags -->
+      <div *ngIf="item.key_stressors && item.key_stressors.length > 0" class="flex items-center gap-1.5 flex-wrap">
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Identified Stressors:</span>
+        <span *ngFor="let s of item.key_stressors"
+              class="px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+          • {{ s }}
+        </span>
+      </div>
+
+      <!-- AI Recommendations Preview -->
+      <div class="space-y-1.5 pt-1">
+        <span class="text-[10px] font-extrabold text-indigo-700 uppercase tracking-wider flex items-center gap-1">
+          <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+          AI Preventive Interventions:
+        </span>
+        <ul class="space-y-1 text-xs text-slate-700 font-medium">
+          <li *ngFor="let rec of item.recommendations.slice(0, 2)" class="flex items-start gap-1.5">
+            <span class="text-indigo-600 font-bold">•</span>
+            <span class="line-clamp-1">{{ rec }}</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Actions Footer -->
+      <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+        <div class="text-[10px] text-slate-400 font-medium">
+          Telemetry Analysis: <span class="font-bold text-emerald-600">Active</span>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <!-- Live Regenerate Report Button -->
+          <button (click)="generateLiveAIReport(item, $event)" [disabled]="generatingId === item.employee_id"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition"
+                  [ngClass]="generatingId === item.employee_id ? 'bg-indigo-100 text-indigo-700' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200'">
+            <svg *ngIf="generatingId !== item.employee_id" class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+            </svg>
+            <svg *ngIf="generatingId === item.employee_id" class="w-3.5 h-3.5 animate-spin text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span>{{ generatingId === item.employee_id ? 'Synthesizing...' : '⚡ Generate AI Report' }}</span>
+          </button>
+
+          <!-- View Full Audit Modal Button -->
+          <button (click)="openAuditModal(item)"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition">
+            <span>View Full Audit</span>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detailed Psychological Audit Modal -->
+  <div *ngIf="selectedEmployee"
+       class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-200">
+      
+      <!-- Modal Header -->
+      <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-indigo-500/30 text-indigo-300 border border-indigo-400/30 flex items-center justify-center font-bold text-sm">
+            🤖
+          </div>
+          <div>
+            <h3 class="text-base font-black text-white">
+              Psychological Audit & Retention Dossier: {{ selectedEmployee.employee_name }}
+            </h3>
+            <p class="text-xs text-indigo-200 font-medium">
+              {{ selectedEmployee.designation }} • {{ selectedEmployee.department_name }} Department
+            </p>
+          </div>
+        </div>
+        <button (click)="closeAuditModal()"
+                class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition">
+          ✕
+        </button>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="p-6 overflow-y-auto space-y-6 text-slate-800 text-sm">
+        
+        <!-- Risk & Score Banner -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 rounded-xl bg-slate-50 border border-slate-200">
+          <div>
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Health Status</span>
+            <span class="text-sm font-black text-slate-900">{{ selectedEmployee.health_status }}</span>
+            <span class="text-[11px] block text-slate-500 mt-0.5">Risk Level: <b class="text-rose-600">{{ selectedEmployee.risk_level }}</b></span>
+          </div>
+          <div>
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Burnout Friction Index</span>
+            <span class="text-xl font-black text-rose-600">{{ selectedEmployee.burnout_score }}/100</span>
+            <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden mt-1">
+              <div class="h-full bg-rose-600 rounded-full" [style.width.%]="selectedEmployee.burnout_score"></div>
+            </div>
+          </div>
+          <div>
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Work-Life Balance Score</span>
+            <span class="text-xl font-black text-emerald-700">{{ selectedEmployee.work_life_balance_score }}/100</span>
+            <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden mt-1">
+              <div class="h-full bg-emerald-600 rounded-full" [style.width.%]="selectedEmployee.work_life_balance_score"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Telemetry Details Breakdown -->
+        <div class="space-y-2">
+          <h4 class="text-xs font-black uppercase tracking-wider text-slate-500">Biometric & Behavioral Telemetry Inputs</h4>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+            <div class="p-3 rounded-lg bg-slate-100/70 border border-slate-200">
+              <span class="text-slate-500 block text-[10px] font-bold">Monthly Overtime</span>
+              <span class="text-sm font-extrabold text-amber-700">{{ selectedEmployee.overtime_hours_month }} hrs</span>
+            </div>
+            <div class="p-3 rounded-lg bg-slate-100/70 border border-slate-200">
+              <span class="text-slate-500 block text-[10px] font-bold">Daily Work Average</span>
+              <span class="text-sm font-extrabold text-slate-800">{{ selectedEmployee.avg_daily_work_hours }} hrs/day</span>
+            </div>
+            <div class="p-3 rounded-lg bg-slate-100/70 border border-slate-200">
+              <span class="text-slate-500 block text-[10px] font-bold">Weekend Work</span>
+              <span class="text-sm font-extrabold text-purple-700">{{ selectedEmployee.weekend_work_days }} days</span>
+            </div>
+            <div class="p-3 rounded-lg bg-slate-100/70 border border-slate-200">
+              <span class="text-slate-500 block text-[10px] font-bold">Late Arrivals</span>
+              <span class="text-sm font-extrabold text-rose-700">{{ selectedEmployee.late_arrivals_count }} times</span>
+            </div>
+            <div class="p-3 rounded-lg bg-slate-100/70 border border-slate-200">
+              <span class="text-slate-500 block text-[10px] font-bold">Active Tasks</span>
+              <span class="text-sm font-extrabold text-blue-700">{{ selectedEmployee.pending_tasks_count }} tasks</span>
+            </div>
+            <div class="p-3 rounded-lg bg-slate-100/70 border border-slate-200">
+              <span class="text-slate-500 block text-[10px] font-bold">Overdue / Delayed</span>
+              <span class="text-sm font-extrabold text-rose-600">{{ selectedEmployee.overdue_tasks_count }} tasks</span>
+            </div>
+            <div class="p-3 rounded-lg bg-slate-100/70 border border-slate-200">
+              <span class="text-slate-500 block text-[10px] font-bold">Days Without Leave</span>
+              <span class="text-sm font-extrabold text-slate-800">{{ selectedEmployee.days_since_last_leave }} days</span>
+            </div>
+            <div class="p-3 rounded-lg bg-slate-100/70 border border-slate-200">
+              <span class="text-slate-500 block text-[10px] font-bold">Fatigue Level</span>
+              <span class="text-sm font-extrabold text-indigo-700">{{ selectedEmployee.fatigue_level || 'Normal' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Clinical Narrative Analysis -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-black uppercase tracking-wider text-indigo-700 flex items-center gap-1.5">
+              <span>🧠</span> AI Diagnostic Assessment
+            </h4>
+            <span class="text-[10px] text-slate-400 font-mono">Neural Behavioral Assessment</span>
+          </div>
+          <div class="p-4 rounded-xl bg-indigo-50/60 border border-indigo-200 text-xs text-slate-800 leading-relaxed font-medium whitespace-pre-line">
+            {{ selectedEmployee.ai_summary || selectedEmployee.detailed_analysis }}
+          </div>
+        </div>
+
+        <!-- Managerial Interventions -->
+        <div class="space-y-2">
+          <h4 class="text-xs font-black uppercase tracking-wider text-rose-700 flex items-center gap-1.5">
+            <span>📋</span> Prescribed Manager & HR Interventions
+          </h4>
+          <div class="space-y-2">
+            <div *ngFor="let rec of selectedEmployee.recommendations"
+                 class="flex items-start gap-2.5 p-3 rounded-lg bg-rose-50/40 border border-rose-200/80 text-xs text-slate-800">
+              <span class="text-rose-600 font-black">✓</span>
+              <span class="font-medium">{{ rec }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Employee Wellness Guidance -->
+        <div *ngIf="selectedEmployee.employee_wellness_tips && selectedEmployee.employee_wellness_tips.length > 0" class="space-y-2">
+          <h4 class="text-xs font-black uppercase tracking-wider text-emerald-700 flex items-center gap-1.5">
+            <span>🌱</span> Direct Wellness Tips for {{ selectedEmployee.employee_name }}
+          </h4>
+          <div class="space-y-2">
+            <div *ngFor="let tip of selectedEmployee.employee_wellness_tips"
+                 class="flex items-start gap-2.5 p-3 rounded-lg bg-emerald-50/40 border border-emerald-200 text-xs text-slate-800">
+              <span class="text-emerald-600 font-black">★</span>
+              <span class="font-medium">{{ tip }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-6 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
+        <button (click)="generateLiveAIReport(selectedEmployee)" [disabled]="generatingId === selectedEmployee.employee_id"
+                class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 transition">
+          <svg *ngIf="generatingId !== selectedEmployee.employee_id" class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+          <svg *ngIf="generatingId === selectedEmployee.employee_id" class="w-4 h-4 animate-spin text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <span>{{ generatingId === selectedEmployee.employee_id ? 'Regenerating Analysis...' : '⚡ Re-Synthesize Report' }}</span>
+        </button>
+
+        <div class="flex items-center gap-2">
+          <button (click)="printReport()"
+                  class="px-3.5 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-100 transition">
+            🖨️ Print Dossier
+          </button>
+          <button (click)="closeAuditModal()"
+                  class="px-4 py-2 text-xs font-bold text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
