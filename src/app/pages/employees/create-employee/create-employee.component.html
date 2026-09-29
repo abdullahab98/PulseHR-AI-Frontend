@@ -1,0 +1,299 @@
+<div class="p-6 max-w-5xl mx-auto space-y-6">
+  
+  <!-- Breadcrumb & Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <div class="flex items-center space-x-2 text-xs font-semibold text-slate-400 mb-1">
+        <a routerLink="/employees" class="hover:text-blue-400 transition-colors">HR</a>
+        <span>/</span>
+        <a routerLink="/employees" class="hover:text-blue-400 transition-colors">Employees</a>
+        <span>/</span>
+        <span class="text-blue-400">Create New</span>
+      </div>
+      <h1 class="text-2xl font-extrabold text-white tracking-tight flex items-center gap-2.5">
+        <span class="p-2 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+          </svg>
+        </span>
+        Create Employee
+      </h1>
+      <p class="text-xs text-slate-400 mt-1">Add a new team member to your organizational structure, office location, and designation chain.</p>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button (click)="navigateToOrganogram()" 
+              class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-all flex items-center gap-1.5 shadow-sm">
+        <span>🌳</span>
+        <span>View Organogram</span>
+      </button>
+      <button (click)="navigateToList()" 
+              class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-all flex items-center gap-1.5 shadow-sm">
+        <span>👥</span>
+        <span>Employee Directory</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Success Notification Banner -->
+  <div *ngIf="successMessage" class="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fade-in shadow-lg shadow-emerald-500/5">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-emerald-500/20 flex items-center justify-center shrink-0 text-emerald-400">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+      </div>
+      <div>
+        <h4 class="text-sm font-bold text-white">Employee Onboarded!</h4>
+        <p class="text-xs text-emerald-300/90">{{ successMessage }}</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2 shrink-0">
+      <button (click)="resetForm()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600/30 hover:bg-emerald-600/50 text-white border border-emerald-500/40 transition-all">
+        + Add Another
+      </button>
+      <button (click)="navigateToList()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-all">
+        Go to Directory
+      </button>
+    </div>
+  </div>
+
+  <!-- Error Notification Banner -->
+  <div *ngIf="errorMessage" class="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 flex items-center gap-3 animate-fade-in shadow-lg shadow-rose-500/5">
+    <div class="w-9 h-9 rounded-xl bg-rose-500/20 flex items-center justify-center shrink-0 text-rose-400">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+      </svg>
+    </div>
+    <div>
+      <h4 class="text-sm font-bold text-white">Validation Error</h4>
+      <p class="text-xs text-rose-300/90">{{ errorMessage }}</p>
+    </div>
+  </div>
+
+  <!-- Main Creation Card Form -->
+  <form (ngSubmit)="onSubmit()" class="bg-[#0f172a]/95 border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-8 shadow-xl backdrop-blur-md">
+
+    <!-- Section 1: Basic & Identification Info -->
+    <div>
+      <div class="flex items-center space-x-2 pb-3 border-b border-slate-800">
+        <span class="w-6 h-6 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs font-black">1</span>
+        <h3 class="text-sm font-bold text-white uppercase tracking-wider">Basic Identity & Credentials</h3>
+      </div>
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-5">
+        <!-- Employee Code -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+            Employee Code <span class="text-rose-400">*</span>
+          </label>
+          <div class="relative">
+            <input type="text" [(ngModel)]="employeeData.employee_code" name="employee_code" required
+                   placeholder="e.g. EMP-101"
+                   class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors font-mono" />
+            <button type="button" (click)="generateSuggestedCode()" 
+                    title="Generate Random Code"
+                    class="absolute right-2 top-2 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-400 hover:text-white transition-colors">
+              ⚡ Auto
+            </button>
+          </div>
+        </div>
+
+        <!-- First Name -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+            First Name <span class="text-rose-400">*</span>
+          </label>
+          <input type="text" [(ngModel)]="employeeData.first_name" name="first_name" required
+                 placeholder="Jane"
+                 class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors" />
+        </div>
+
+        <!-- Last Name -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+            Last Name <span class="text-rose-400">*</span>
+          </label>
+          <input type="text" [(ngModel)]="employeeData.last_name" name="last_name" required
+                 placeholder="Doe"
+                 class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors" />
+        </div>
+
+        <!-- Phone Number -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Phone Number</label>
+          <input type="tel" [(ngModel)]="employeeData.phone" name="phone"
+                 placeholder="+1 (555) 000-0000"
+                 class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors" />
+        </div>
+
+        <!-- Personal Email -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Personal Email</label>
+          <input type="email" [(ngModel)]="employeeData.personal_email" name="personal_email"
+                 placeholder="jane.doe@example.com"
+                 class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors" />
+        </div>
+
+        <!-- Hire Date -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Hire Date</label>
+          <input type="date" [(ngModel)]="employeeData.hire_date" name="hire_date"
+                 class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-blue-500 transition-colors" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Organizational Placement & Structure -->
+    <div>
+      <div class="flex items-center space-x-2 pb-3 border-b border-slate-800">
+        <span class="w-6 h-6 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xs font-black">2</span>
+        <h3 class="text-sm font-bold text-white uppercase tracking-wider">Organizational Placement</h3>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-5">
+        <!-- Designation -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+            Designation <span class="text-indigo-400 font-normal">(Auto-syncs Rank & Office)</span>
+          </label>
+          <select [(ngModel)]="employeeData.designation_id" name="designation_id" (change)="onDesignationChange()"
+                  class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-indigo-500 transition-colors">
+            <option [ngValue]="null">-- Select Designation --</option>
+            <option *ngFor="let des of designations" [value]="des.id">{{ des.name }}</option>
+          </select>
+        </div>
+
+        <!-- Office -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Office Location</label>
+          <select [(ngModel)]="employeeData.office_id" name="office_id"
+                  class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-indigo-500 transition-colors">
+            <option [ngValue]="null">-- Select Office --</option>
+            <option *ngFor="let off of offices" [value]="off.id">🏢 {{ off.name }}</option>
+          </select>
+        </div>
+
+        <!-- Rank -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Rank Level</label>
+          <select [(ngModel)]="employeeData.rank_id" name="rank_id"
+                  class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-indigo-500 transition-colors">
+            <option [ngValue]="null">-- Select Rank --</option>
+            <option *ngFor="let r of ranks" [value]="r.id">🎖️ {{ r.name }}</option>
+          </select>
+        </div>
+
+        <!-- Department -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Department</label>
+          <select [(ngModel)]="employeeData.department_id" name="department_id"
+                  class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-indigo-500 transition-colors">
+            <option [ngValue]="null">-- Select Department --</option>
+            <option *ngFor="let dept of departments" [value]="dept.id">🏛️ {{ dept.name }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Compensation -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-5">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Annual Salary / Compensation ($)</label>
+          <input type="number" [(ngModel)]="employeeData.salary" name="salary"
+                 placeholder="75000"
+                 class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-indigo-500 transition-colors" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Key Skills (Comma separated)</label>
+          <input type="text" [(ngModel)]="employeeData.skillsString" name="skillsString"
+                 placeholder="e.g. Angular, Python, Project Management"
+                 class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-indigo-500 transition-colors" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3: Emergency Contact & Address -->
+    <div>
+      <div class="flex items-center space-x-2 pb-3 border-b border-slate-800">
+        <span class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs font-black">3</span>
+        <h3 class="text-sm font-bold text-white uppercase tracking-wider">Emergency Contact & Address</h3>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mt-5">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Contact Name</label>
+          <input type="text" [(ngModel)]="employeeData.emergency_name" name="emergency_name"
+                 placeholder="Contact Person Name"
+                 class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Relationship</label>
+          <select [(ngModel)]="employeeData.emergency_relation" name="emergency_relation"
+                  class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-emerald-500 transition-colors">
+            <option *ngFor="let rel of relationOptions" [value]="rel">{{ rel }}</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Emergency Phone</label>
+          <input type="tel" [(ngModel)]="employeeData.emergency_phone" name="emergency_phone"
+                 placeholder="+1 (555) 999-9999"
+                 class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors" />
+        </div>
+      </div>
+
+      <!-- Address row -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mt-5">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Street Address</label>
+          <input type="text" [(ngModel)]="employeeData.address_street" name="address_street"
+                 placeholder="123 Tech Avenue, Suite 400"
+                 class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">City</label>
+          <input type="text" [(ngModel)]="employeeData.address_city" name="address_city"
+                 placeholder="San Francisco"
+                 class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Country</label>
+          <input type="text" [(ngModel)]="employeeData.address_country" name="address_country"
+                 placeholder="United States"
+                 class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 4: Bio / Notes -->
+    <div>
+      <div class="flex items-center space-x-2 pb-3 border-b border-slate-800">
+        <span class="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs font-black">4</span>
+        <h3 class="text-sm font-bold text-white uppercase tracking-wider">Professional Bio</h3>
+      </div>
+      <div class="mt-5">
+        <textarea [(ngModel)]="employeeData.bio" name="bio" rows="3"
+                  placeholder="Brief summary of background, experience, or role responsibilities..."
+                  class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 transition-colors resize-y"></textarea>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex items-center justify-end space-x-4 pt-4 border-t border-slate-800">
+      <button type="button" (click)="navigateToList()"
+              class="px-5 py-2.5 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-all">
+        Cancel
+      </button>
+      <button type="submit" [disabled]="isSubmitting"
+              class="px-6 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-500/25 transition-all flex items-center space-x-2 disabled:opacity-50">
+        <svg *ngIf="isSubmitting" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+        </svg>
+        <span>{{ isSubmitting ? 'Saving Employee...' : 'Save & Onboard Employee' }}</span>
+      </button>
+    </div>
+  </form>
+</div>

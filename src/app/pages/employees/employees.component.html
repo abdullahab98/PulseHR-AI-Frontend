@@ -1,0 +1,511 @@
+<div class="p-6 max-w-7xl mx-auto space-y-6">
+  
+  <!-- Header Banner -->
+  <div class="fuse-card-light p-6 flex flex-col md:flex-row md:items-center md:justify-between border-l-4 border-blue-600 shadow-sm">
+    <div class="space-y-1">
+      <div class="flex items-center space-x-2">
+        <span class="px-2.5 py-0.5 rounded text-[10px] font-extrabold uppercase bg-blue-100 text-blue-800 tracking-wider">HR & PERSONNEL PANEL</span>
+        <span class="text-xs text-slate-500 font-semibold">• Enterprise Workforce Directory</span>
+      </div>
+      <h1 class="text-2xl font-black text-slate-900 tracking-tight">Employee Directory & HR Management</h1>
+      <p class="text-xs text-slate-600">Search staff profiles, skill matrices, designations, compensation & emergency contacts.</p>
+    </div>
+
+    <div *ngIf="canCreate" class="mt-4 md:mt-0 flex items-center space-x-3">
+      <button (click)="showAddModal = true"
+              class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-xs shadow-md hover:shadow-lg transition-all flex items-center space-x-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+        <span>Register New Staff</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Restricted Access Warning (If user is not HR or Management) -->
+  <div *ngIf="!isAuthorizedToView()" class="fuse-card-light p-8 text-center space-y-4 border-l-4 border-amber-500">
+    <div class="w-12 h-12 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center mx-auto">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+    </div>
+    <h2 class="text-lg font-black text-slate-900">Restricted HR Access</h2>
+    <p class="text-xs text-slate-600 max-w-md mx-auto">
+      Full Enterprise Employee Directory viewing and management is restricted to <strong>HR Personnel, Department Heads, and Management</strong> levels.
+    </p>
+  </div>
+
+  <!-- Main HR Directory Content (If Authorized) -->
+  <div *ngIf="isAuthorizedToView()" class="space-y-6">
+
+    <!-- Overview Stats Bar -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div class="fuse-card-light p-4 space-y-1">
+        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Staff</span>
+        <p class="text-2xl font-black text-slate-900">{{ employees.length }} <span class="text-xs font-semibold text-slate-500">Employees</span></p>
+      </div>
+      <div class="fuse-card-light p-4 space-y-1">
+        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Filtered Staff</span>
+        <p class="text-2xl font-black text-blue-700">{{ filteredEmployees.length }} <span class="text-xs font-semibold text-slate-500">Matched</span></p>
+      </div>
+      <div class="fuse-card-light p-4 space-y-1">
+        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Leadership Officers</span>
+        <p class="text-2xl font-black text-purple-700">{{ highLevelCount }} <span class="text-xs font-semibold text-slate-500">Heads & PMs</span></p>
+      </div>
+      <div class="fuse-card-light p-4 space-y-1">
+        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Monthly Payroll</span>
+        <p class="text-2xl font-black text-emerald-700">${{ totalPayroll | number:'1.0-0' }}</p>
+      </div>
+    </div>
+
+    <!-- FILTER TOOLBAR -->
+    <div class="fuse-card-light p-4 space-y-3">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+        
+        <!-- Search Input -->
+        <div class="relative flex-1">
+          <svg class="w-4 h-4 text-slate-400 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input type="text" [(ngModel)]="searchQuery"
+                 placeholder="Search staff by name, employee code, email, designation, or skill..."
+                 class="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-300 bg-white text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 focus:outline-none" />
+        </div>
+
+        <!-- Filter Dropdowns & View Switchers -->
+        <div class="flex flex-wrap items-center gap-2">
+          
+          <!-- Department Filter Dropdown -->
+          <div class="flex items-center space-x-1.5">
+            <label class="text-[10px] font-bold text-slate-500 uppercase">Department:</label>
+            <select [(ngModel)]="selectedDepartmentId"
+                    class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-bold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+              <option value="ALL">All Departments</option>
+              <option *ngFor="let d of departments" [value]="d.id">{{ d.name }}</option>
+            </select>
+          </div>
+
+          <!-- Role / Access Level Filter Dropdown -->
+          <div class="flex items-center space-x-1.5">
+            <label class="text-[10px] font-bold text-slate-500 uppercase">Role:</label>
+            <select [(ngModel)]="selectedRole"
+                    class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-bold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+              <option *ngFor="let r of rolesList" [value]="r.value">{{ r.label }}</option>
+            </select>
+          </div>
+
+          <!-- View Mode Switcher -->
+          <div class="flex items-center bg-slate-200/80 p-0.5 rounded-lg">
+            <button (click)="viewMode = 'cards'"
+                    [class.bg-white]="viewMode === 'cards'"
+                    [class.shadow-xs]="viewMode === 'cards'"
+                    [class.text-slate-900]="viewMode === 'cards'"
+                    class="px-2.5 py-1 rounded-md text-xs font-bold text-slate-600 transition-all">
+              Cards
+            </button>
+            <button (click)="viewMode = 'table'"
+                    [class.bg-white]="viewMode === 'table'"
+                    [class.shadow-xs]="viewMode === 'table'"
+                    [class.text-slate-900]="viewMode === 'table'"
+                    class="px-2.5 py-1 rounded-md text-xs font-bold text-slate-600 transition-all">
+              Table
+            </button>
+          </div>
+
+          <!-- Clear Filters -->
+          <button (click)="clearFilters()" title="Reset Filters"
+                  class="px-2.5 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-100 text-slate-600 text-xs font-bold transition-all">
+            Clear Filters
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="py-12 text-center text-slate-500 text-xs font-semibold">
+      Loading Employee Directory...
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && filteredEmployees.length === 0" class="fuse-card-light p-12 text-center space-y-2">
+      <p class="text-sm font-bold text-slate-800">No staff members match the selected filter criteria.</p>
+      <button (click)="clearFilters()" class="px-4 py-1.5 bg-blue-600 text-white font-bold rounded-lg text-xs">Reset All Filters</button>
+    </div>
+
+    <!-- CARDS GRID VIEW -->
+    <div *ngIf="!loading && viewMode === 'cards' && filteredEmployees.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div *ngFor="let emp of filteredEmployees" (click)="openDetails(emp)"
+           class="fuse-card-light p-5 space-y-4 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer group relative">
+        
+        <!-- Card Top Header -->
+        <div class="flex items-start justify-between">
+          <div class="flex items-center space-x-3 overflow-hidden">
+            <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center font-extrabold text-white text-base shadow-sm shrink-0">
+              {{ emp.first_name[0] }}{{ emp.last_name[0] }}
+            </div>
+            <div class="overflow-hidden">
+              <h3 class="text-sm font-extrabold text-slate-900 group-hover:text-blue-600 transition-colors truncate leading-tight">
+                {{ emp.first_name }} {{ emp.last_name }}
+              </h3>
+              <p class="text-xs text-blue-700 font-bold truncate mt-0.5">{{ emp.designation }}</p>
+            </div>
+          </div>
+
+          <span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-slate-100 text-slate-700 border border-slate-300/80 shrink-0 ml-2">
+            {{ emp.employee_code }}
+          </span>
+        </div>
+
+        <!-- Info Grid -->
+        <div class="space-y-1.5 text-xs text-slate-700 border-t border-slate-200/80 pt-3">
+          <div class="flex justify-between items-center">
+            <span class="text-slate-500 font-medium">Department:</span>
+            <span class="font-bold text-slate-900">{{ emp.department_name }}</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-slate-500 font-medium">Access Tier:</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-extrabold"
+                  [ngClass]="{
+                    'bg-purple-100 text-purple-800': emp.role === 'SUPER_ADMIN',
+                    'bg-indigo-100 text-indigo-800': emp.role === 'DEPARTMENT_HEAD',
+                    'bg-blue-100 text-blue-800': emp.role === 'MANAGER',
+                    'bg-amber-100 text-amber-800': emp.role === 'TEAM_LEADER',
+                    'bg-slate-100 text-slate-700': emp.role === 'EMPLOYEE',
+                    'bg-emerald-100 text-emerald-800': emp.role === 'SPECIAL_USER'
+                  }">
+              {{ emp.role || 'EMPLOYEE' }}
+            </span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-slate-500 font-medium">Email:</span>
+            <span class="font-bold text-blue-700 truncate max-w-[170px]">{{ emp.email || 'N/A' }}</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-slate-500 font-medium">Compensation:</span>
+            <span class="font-black text-emerald-700">${{ emp.salary | number:'1.0-0' }} / mo</span>
+          </div>
+        </div>
+
+        <!-- Skills Tags -->
+        <div *ngIf="emp.skills && emp.skills.length > 0">
+          <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider mb-1.5">Skill Matrix</p>
+          <div class="flex flex-wrap gap-1">
+            <span *ngFor="let s of emp.skills" class="px-2 py-0.5 rounded bg-slate-100 text-slate-800 border border-slate-200 text-[10px] font-bold">
+              {{ s }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Emergency Contact Card Footer -->
+        <div *ngIf="emp.emergency_contact && emp.emergency_contact['name']" class="p-2.5 rounded-lg bg-amber-50/80 border border-amber-200 text-[11px] space-y-0.5">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-amber-900">🚨 Emergency Contact</span>
+            <span class="text-[10px] text-amber-700 font-bold">({{ emp.emergency_contact['relation'] }})</span>
+          </div>
+          <p class="text-slate-800 font-semibold truncate">{{ emp.emergency_contact['name'] }} — <span class="font-mono text-slate-900 font-bold">{{ emp.emergency_contact['phone'] }}</span></p>
+        </div>
+
+        <!-- Card Quick Action Buttons -->
+        <div class="flex items-center justify-end space-x-1.5 pt-2 border-t border-slate-200/80">
+          <a [routerLink]="['/profile', emp.id]" (click)="$event.stopPropagation()"
+             class="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-[10px] rounded-lg transition-colors flex items-center space-x-1">
+            <span>👤</span>
+            <span>Profile</span>
+          </a>
+          <button *ngIf="canEdit" (click)="openEdit(emp, $event)" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-[10px] rounded-lg transition-colors">Edit</button>
+          <button *ngIf="canDelete" (click)="deleteEmployee(emp.id, $event)" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-[10px] rounded-lg transition-colors">Remove</button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- DATA TABLE VIEW -->
+    <div *ngIf="!loading && viewMode === 'table' && filteredEmployees.length > 0" class="fuse-card-light p-6 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-100 text-slate-700 font-bold uppercase text-[10px] border-b border-slate-200">
+            <tr>
+              <th class="p-3">Staff Member</th>
+              <th class="p-3">Code</th>
+              <th class="p-3">Department</th>
+              <th class="p-3">Access Level</th>
+              <th class="p-3">Skills</th>
+              <th class="p-3 text-right">Salary ($)</th>
+              <th class="p-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200 font-medium">
+            <tr *ngFor="let emp of filteredEmployees" (click)="openDetails(emp)" class="hover:bg-slate-50 cursor-pointer">
+              <td class="p-3">
+                <p class="font-extrabold text-slate-900">{{ emp.first_name }} {{ emp.last_name }}</p>
+                <p class="text-[11px] text-blue-700 font-semibold">{{ emp.designation }}</p>
+                <p class="text-[10px] text-slate-400">{{ emp.email }}</p>
+              </td>
+              <td class="p-3 font-mono font-bold text-slate-800">{{ emp.employee_code }}</td>
+              <td class="p-3 text-slate-800 font-bold">{{ emp.department_name }}</td>
+              <td class="p-3">
+                <span class="px-2 py-0.5 rounded text-[10px] font-extrabold"
+                      [ngClass]="{
+                        'bg-purple-100 text-purple-800': emp.role === 'SUPER_ADMIN',
+                        'bg-indigo-100 text-indigo-800': emp.role === 'DEPARTMENT_HEAD',
+                        'bg-blue-100 text-blue-800': emp.role === 'MANAGER',
+                        'bg-amber-100 text-amber-800': emp.role === 'TEAM_LEADER',
+                        'bg-slate-100 text-slate-700': emp.role === 'EMPLOYEE',
+                        'bg-emerald-100 text-emerald-800': emp.role === 'SPECIAL_USER'
+                      }">
+                  {{ emp.role || 'EMPLOYEE' }}
+                </span>
+              </td>
+              <td class="p-3">
+                <div class="flex flex-wrap gap-1 max-w-xs">
+                  <span *ngFor="let s of emp.skills" class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 text-[9px] font-semibold">
+                    {{ s }}
+                  </span>
+                </div>
+              </td>
+              <td class="p-3 text-right font-black text-emerald-700 text-sm">${{ emp.salary | number:'1.0-0' }}</td>
+              <td class="p-3 text-right space-x-1">
+                <a [routerLink]="['/profile', emp.id]" (click)="$event.stopPropagation()"
+                   class="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-[10px] rounded inline-block">Profile</a>
+                <button *ngIf="canEdit" (click)="openEdit(emp, $event)" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-[10px] rounded">Edit</button>
+                <button *ngIf="canDelete" (click)="deleteEmployee(emp.id, $event)" class="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-[10px] rounded">Delete</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- DETAILS MODAL -->
+  <div *ngIf="showDetailsModal && selectedEmployee" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="fuse-card-light max-w-xl w-full p-6 space-y-5 shadow-2xl border-t-4 border-blue-600">
+      <div class="flex items-start justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center font-extrabold text-white text-lg">
+            {{ selectedEmployee.first_name[0] }}{{ selectedEmployee.last_name[0] }}
+          </div>
+          <div>
+            <h3 class="text-lg font-black text-slate-900">{{ selectedEmployee.first_name }} {{ selectedEmployee.last_name }}</h3>
+            <p class="text-xs text-blue-700 font-bold">{{ selectedEmployee.designation }} • {{ selectedEmployee.department_name }}</p>
+          </div>
+        </div>
+
+        <button (click)="showDetailsModal = false" class="text-slate-400 hover:text-slate-600 p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Dossier Rows -->
+      <div class="grid grid-cols-2 gap-4 text-xs">
+        <div class="p-3 bg-slate-50 rounded-xl space-y-0.5">
+          <span class="text-[10px] font-bold text-slate-400 uppercase">Employee Code</span>
+          <p class="font-extrabold text-slate-900 font-mono">{{ selectedEmployee.employee_code }}</p>
+        </div>
+        <div class="p-3 bg-slate-50 rounded-xl space-y-0.5">
+          <span class="text-[10px] font-bold text-slate-400 uppercase">System Role</span>
+          <p class="font-extrabold text-slate-900">{{ selectedEmployee.role || 'EMPLOYEE' }}</p>
+        </div>
+        <div class="p-3 bg-slate-50 rounded-xl space-y-0.5">
+          <span class="text-[10px] font-bold text-slate-400 uppercase">Email Address</span>
+          <p class="font-extrabold text-blue-700">{{ selectedEmployee.email || 'N/A' }}</p>
+        </div>
+        <div class="p-3 bg-slate-50 rounded-xl space-y-0.5">
+          <span class="text-[10px] font-bold text-slate-400 uppercase">Monthly Salary</span>
+          <p class="font-black text-emerald-700">${{ selectedEmployee.salary | number:'1.0-0' }}</p>
+        </div>
+      </div>
+
+      <!-- Skills Section -->
+      <div class="space-y-1.5">
+        <h4 class="text-xs font-bold text-slate-800 uppercase">Technical Skills & Competencies</h4>
+        <div class="flex flex-wrap gap-1.5">
+          <span *ngFor="let s of selectedEmployee.skills" class="px-2.5 py-1 rounded-md bg-blue-50 text-blue-800 border border-blue-200 text-xs font-bold">
+            {{ s }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Emergency Contact -->
+      <div *ngIf="selectedEmployee.emergency_contact && selectedEmployee.emergency_contact['name']" class="p-3 rounded-xl bg-amber-50 border border-amber-200 space-y-1">
+        <span class="text-xs font-bold text-amber-900 block">🚨 Emergency Contact Info</span>
+        <p class="text-xs text-slate-800">
+          <strong>Name:</strong> {{ selectedEmployee.emergency_contact['name'] }} ({{ selectedEmployee.emergency_contact['relation'] }})<br>
+          <strong>Phone:</strong> <span class="font-bold text-slate-900">{{ selectedEmployee.emergency_contact['phone'] }}</span>
+        </p>
+      </div>
+
+      <div class="flex justify-end pt-2">
+        <button (click)="showDetailsModal = false" class="px-4 py-2 bg-slate-200 text-slate-800 font-bold rounded-lg text-xs">Close Dossier</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD EMPLOYEE MODAL -->
+  <div *ngIf="showAddModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="fuse-card-light max-w-lg w-full p-6 space-y-4 shadow-2xl border-t-4 border-blue-600">
+      <h3 class="text-lg font-black text-slate-900">Register Staff Member</h3>
+      
+      <div class="space-y-3 text-xs">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Employee Code *</label>
+            <input [(ngModel)]="newEmployee.employee_code" placeholder="EMP-107" class="w-full p-2 border border-slate-300 rounded font-mono" />
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Department</label>
+            <select [(ngModel)]="newEmployee.department_id" class="w-full p-2 border border-slate-300 rounded font-bold">
+              <option *ngFor="let d of departments" [value]="d.id">{{ d.name }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">First Name *</label>
+            <input [(ngModel)]="newEmployee.first_name" placeholder="John" class="w-full p-2 border border-slate-300 rounded" />
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Last Name *</label>
+            <input [(ngModel)]="newEmployee.last_name" placeholder="Doe" class="w-full p-2 border border-slate-300 rounded" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Designation *</label>
+            <select [(ngModel)]="newEmployee.designation_id" (change)="onDesignationChange('new')" class="w-full p-2 border border-slate-300 rounded font-bold">
+              <option [ngValue]="null">-- Custom / Plain --</option>
+              <option *ngFor="let des of designations" [value]="des.id">{{ des.name }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Office Location</label>
+            <select [(ngModel)]="newEmployee.office_id" class="w-full p-2 border border-slate-300 rounded">
+              <option [ngValue]="null">-- Select Office --</option>
+              <option *ngFor="let o of offices" [value]="o.id">🏢 {{ o.name }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Rank Level</label>
+            <select [(ngModel)]="newEmployee.rank_id" class="w-full p-2 border border-slate-300 rounded">
+              <option [ngValue]="null">-- Select Rank --</option>
+              <option *ngFor="let r of ranks" [value]="r.id">⭐ {{ r.name }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div *ngIf="!newEmployee.designation_id">
+          <label class="block font-bold text-slate-700 mb-1">Custom Designation Title</label>
+          <input [(ngModel)]="newEmployee.designation" placeholder="e.g. Senior Software Architect" class="w-full p-2 border border-slate-300 rounded" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Monthly Salary ($)</label>
+            <input type="number" [(ngModel)]="newEmployee.salary" class="w-full p-2 border border-slate-300 rounded font-bold" />
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Skills (comma separated)</label>
+            <input [(ngModel)]="newEmployee.skillsString" placeholder="Angular, Python, Docker" class="w-full p-2 border border-slate-300 rounded" />
+          </div>
+        </div>
+
+        <!-- Emergency Contact Section -->
+        <div class="pt-2 border-t border-slate-200 space-y-2">
+          <span class="font-bold text-slate-700 block">Emergency Contact Info</span>
+          <div class="grid grid-cols-3 gap-2">
+            <input [(ngModel)]="newEmployee.emergency_name" placeholder="Contact Name" class="p-1.5 border border-slate-300 rounded" />
+            <input [(ngModel)]="newEmployee.emergency_relation" placeholder="Relation" class="p-1.5 border border-slate-300 rounded" />
+            <input [(ngModel)]="newEmployee.emergency_phone" placeholder="Phone No" class="p-1.5 border border-slate-300 rounded" />
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-2 pt-2">
+        <button (click)="showAddModal = false" class="px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded text-xs">Cancel</button>
+        <button (click)="createEmployee()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded text-xs">Register Staff</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT EMPLOYEE MODAL -->
+  <div *ngIf="showEditModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="fuse-card-light max-w-lg w-full p-6 space-y-4 shadow-2xl border-t-4 border-blue-600">
+      <h3 class="text-lg font-black text-slate-900">Edit Staff Profile</h3>
+      
+      <div class="space-y-3 text-xs">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">First Name</label>
+            <input [(ngModel)]="editEmployeeData.first_name" class="w-full p-2 border border-slate-300 rounded" />
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Last Name</label>
+            <input [(ngModel)]="editEmployeeData.last_name" class="w-full p-2 border border-slate-300 rounded" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Designation</label>
+            <select [(ngModel)]="editEmployeeData.designation_id" (change)="onDesignationChange('edit')" class="w-full p-2 border border-slate-300 rounded font-bold">
+              <option [ngValue]="null">-- Custom / Unlinked --</option>
+              <option *ngFor="let des of designations" [value]="des.id">{{ des.name }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Office Location</label>
+            <select [(ngModel)]="editEmployeeData.office_id" class="w-full p-2 border border-slate-300 rounded">
+              <option [ngValue]="null">-- Select Office --</option>
+              <option *ngFor="let o of offices" [value]="o.id">🏢 {{ o.name }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Rank Level</label>
+            <select [(ngModel)]="editEmployeeData.rank_id" class="w-full p-2 border border-slate-300 rounded">
+              <option [ngValue]="null">-- Select Rank --</option>
+              <option *ngFor="let r of ranks" [value]="r.id">⭐ {{ r.name }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div *ngIf="!editEmployeeData.designation_id">
+          <label class="block font-bold text-slate-700 mb-1">Custom Designation Title</label>
+          <input [(ngModel)]="editEmployeeData.designation" class="w-full p-2 border border-slate-300 rounded" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Department</label>
+            <select [(ngModel)]="editEmployeeData.department_id" class="w-full p-2 border border-slate-300 rounded font-bold">
+              <option *ngFor="let d of departments" [value]="d.id">{{ d.name }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Monthly Salary ($)</label>
+            <input type="number" [(ngModel)]="editEmployeeData.salary" class="w-full p-2 border border-slate-300 rounded font-bold" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Skills (comma separated)</label>
+          <input [(ngModel)]="editEmployeeData.skillsString" class="w-full p-2 border border-slate-300 rounded" />
+        </div>
+
+        <div class="pt-2 border-t border-slate-200 space-y-2">
+          <span class="font-bold text-slate-700 block">Emergency Contact</span>
+          <div class="grid grid-cols-3 gap-2">
+            <input [(ngModel)]="editEmployeeData.emergency_name" placeholder="Name" class="p-1.5 border border-slate-300 rounded" />
+            <input [(ngModel)]="editEmployeeData.emergency_relation" placeholder="Relation" class="p-1.5 border border-slate-300 rounded" />
+            <input [(ngModel)]="editEmployeeData.emergency_phone" placeholder="Phone" class="p-1.5 border border-slate-300 rounded" />
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-2 pt-2">
+        <button (click)="showEditModal = false" class="px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded text-xs">Cancel</button>
+        <button (click)="saveEdit()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded text-xs">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+</div>

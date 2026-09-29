@@ -1,0 +1,54 @@
+<div class="space-y-6">
+  <!-- Page Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-200">
+    <div>
+      <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Projects & Milestones</h1>
+      <p class="text-xs text-slate-600 font-medium mt-0.5">Track company projects, budgets, deadlines & task completion progress</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div *ngFor="let proj of projects" class="fuse-card-light p-6 space-y-4 relative">
+      <div class="flex items-start justify-between">
+        <div>
+          <span class="text-[11px] font-extrabold uppercase tracking-wider text-blue-700 block">{{ proj.department_name }}</span>
+          <h3 class="text-lg font-bold text-slate-900 mt-0.5 leading-tight">{{ proj.title }}</h3>
+        </div>
+        <span [ngClass]="{
+          'badge-blue': proj.status === 'IN_PROGRESS',
+          'badge-rose': proj.status === 'DELAYED',
+          'badge-emerald': proj.status === 'COMPLETED',
+          'badge-amber': proj.status === 'ON_HOLD',
+          'badge-slate': proj.status === 'PLANNING'
+        }" class="px-3 py-1 rounded-md text-[10px] uppercase tracking-wide">
+          {{ proj.status }}
+        </span>
+      </div>
+
+      <p class="text-xs text-slate-700 leading-relaxed font-medium">{{ proj.description }}</p>
+
+      <div class="grid grid-cols-2 gap-3 text-xs border-t border-slate-200 pt-3 text-slate-800">
+        <div>
+          <span class="text-slate-500 font-semibold block text-[10px] uppercase">Project Manager:</span>
+          <span class="font-extrabold text-slate-900">{{ proj.project_manager_name }}</span>
+        </div>
+        <div>
+          <span class="text-slate-500 font-semibold block text-[10px] uppercase">Budget Allocated:</span>
+          <span class="font-extrabold text-emerald-700">${{ proj.budget | number }}</span>
+        </div>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="space-y-1.5 pt-2">
+        <div class="flex justify-between text-xs">
+          <span class="text-slate-600 font-medium">Task Completion Progress:</span>
+          <span class="font-extrabold text-blue-700">{{ proj.completed_task_count }} / {{ proj.task_count }} tasks</span>
+        </div>
+        <div class="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden border border-slate-300">
+          <div [style.width.%]="(proj.completed_task_count! / (proj.task_count || 1)) * 100" 
+               class="bg-blue-600 h-full rounded-full transition-all duration-300"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,95 @@
+<div class="p-6 max-w-7xl mx-auto space-y-6">
+  
+  <!-- Header -->
+  <div class="fuse-card-light p-6 flex flex-col md:flex-row md:items-center md:justify-between border-l-4 border-teal-500">
+    <div>
+      <div class="flex items-center space-x-2">
+        <span class="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase bg-teal-100 text-teal-800">DOCUMENTS PANEL</span>
+        <span class="text-xs text-slate-500 font-semibold">• Policy Vault, Contracts & Knowledge Base</span>
+      </div>
+      <h1 class="text-2xl font-black text-slate-900">Document Repository Vault</h1>
+      <p class="text-xs text-slate-600">Centralized corporate repository with confidentiality access controls.</p>
+    </div>
+
+    <button (click)="showModal = true" class="mt-4 md:mt-0 px-4 py-2 rounded-lg bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow transition-all flex items-center space-x-2">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      <span>Upload Document</span>
+    </button>
+  </div>
+
+  <!-- Documents Table Card -->
+  <div class="fuse-card-light p-6 space-y-4">
+    <h2 class="text-sm font-extrabold text-slate-900 uppercase">Document Archives</h2>
+
+    <div *ngIf="loading" class="py-8 text-center text-slate-500 text-xs">Loading vault...</div>
+
+    <div *ngIf="!loading" class="overflow-x-auto">
+      <table class="w-full text-left text-xs">
+        <thead class="bg-slate-100 text-slate-700 font-bold uppercase text-[10px] border-b border-slate-200">
+          <tr>
+            <th class="p-3">Title & Category</th>
+            <th class="p-3">File Reference</th>
+            <th class="p-3">Uploaded By</th>
+            <th class="p-3">Classification</th>
+            <th class="p-3">Date</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200 font-medium">
+          <tr *ngFor="let d of docs" class="hover:bg-slate-50">
+            <td class="p-3">
+              <p class="font-bold text-slate-900">{{ d.title }}</p>
+              <p class="text-[11px] text-slate-500 uppercase font-bold">{{ d.category }}</p>
+            </td>
+            <td class="p-3 font-mono text-slate-600">{{ d.file_name }}</td>
+            <td class="p-3 text-slate-700 font-semibold">{{ d.uploader_name || 'System Admin' }}</td>
+            <td class="p-3">
+              <span class="px-2 py-0.5 rounded text-[10px] font-extrabold"
+                    [ngClass]="{
+                      'bg-rose-100 text-rose-800': d.confidentiality_level === 'RESTRICTED',
+                      'bg-amber-100 text-amber-800': d.confidentiality_level === 'CONFIDENTIAL',
+                      'bg-blue-100 text-blue-800': d.confidentiality_level === 'INTERNAL',
+                      'bg-emerald-100 text-emerald-800': d.confidentiality_level === 'PUBLIC'
+                    }">
+                {{ d.confidentiality_level }}
+              </span>
+            </td>
+            <td class="p-3 text-slate-600">{{ d.created_at | date:'shortDate' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div *ngIf="showModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="fuse-card-light max-w-lg w-full p-6 space-y-4 shadow-2xl border-t-4 border-teal-500">
+      <h3 class="text-lg font-black text-slate-900">Upload Enterprise Document</h3>
+      
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Document Title</label>
+          <input [(ngModel)]="newDoc.title" placeholder="e.g. Employee Security Protocol 2026" class="w-full p-2 border border-slate-300 rounded" />
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Category</label>
+          <input [(ngModel)]="newDoc.category" placeholder="POLICIES / CONTRACTS / HANDBOOK" class="w-full p-2 border border-slate-300 rounded uppercase font-bold" />
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Confidentiality Level</label>
+          <select [(ngModel)]="newDoc.confidentiality_level" class="w-full p-2 border border-slate-300 rounded font-bold">
+            <option value="PUBLIC">PUBLIC</option>
+            <option value="INTERNAL">INTERNAL</option>
+            <option value="CONFIDENTIAL">CONFIDENTIAL</option>
+            <option value="RESTRICTED">RESTRICTED</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-2 pt-2">
+        <button (click)="showModal = false" class="px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded text-xs">Cancel</button>
+        <button (click)="uploadDoc()" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded text-xs">Upload to Vault</button>
+      </div>
+    </div>
+  </div>
+
+</div>
