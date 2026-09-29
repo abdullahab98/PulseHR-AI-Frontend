@@ -1,0 +1,193 @@
+<div class="p-6 max-w-7xl mx-auto space-y-6">
+
+  <!-- Header Banner -->
+  <div class="fuse-card-light p-6 rounded-2xl bg-white flex flex-col md:flex-row md:items-center md:justify-between border-l-4 border-purple-500 shadow-sm gap-4">
+    <div class="space-y-1">
+      <div class="flex items-center space-x-2">
+        <span class="px-2.5 py-0.5 rounded text-[10px] font-extrabold uppercase bg-purple-100 text-purple-800 tracking-wider">MODULE 3 & 4</span>
+        <span class="text-xs text-slate-500 font-semibold">• Payroll Management</span>
+      </div>
+      <h1 class="text-2xl font-black text-slate-900 tracking-tight">🎁 Allowance & Bonus Management</h1>
+      <p class="text-xs text-slate-600">Configure company-wide allowances (House Rent, Medical, Conveyance, Food) and bonuses (Festival, Performance, Annual).</p>
+    </div>
+    <div class="flex items-center space-x-2">
+      <button (click)="openAddAllowance()" class="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow transition">
+        + Add Allowance
+      </button>
+      <button (click)="openAddBonus()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow transition">
+        + Add Bonus
+      </button>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+    <!-- Module 3: Allowances -->
+    <div class="fuse-card-light p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-black text-slate-900">Module 3: Allowance Categories</h2>
+          <p class="text-xs text-slate-500">Corporate allowance categories and allocation rules</p>
+        </div>
+        <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-purple-50 text-purple-700">
+          {{ allowanceConfigs.length }} Rules
+        </span>
+      </div>
+
+      <div class="divide-y divide-slate-100">
+        <div *ngFor="let a of allowanceConfigs" class="py-3 flex items-center justify-between hover:bg-slate-50 px-2 rounded-xl transition">
+          <div>
+            <p class="font-bold text-slate-900 text-xs">{{ a.name }}</p>
+            <p class="text-[11px] text-slate-500">{{ a.description || 'Configured allowance rule' }}</p>
+            <div class="flex items-center space-x-2 mt-1">
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-bold">{{ a.allowance_type }}</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 font-bold">{{ a.applies_to }}</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold">{{ a.is_taxable ? 'Taxable' : 'Tax Exempt' }}</span>
+            </div>
+          </div>
+          <div class="flex items-center space-x-3">
+            <span class="font-black text-slate-900 text-sm">
+              {{ a.allowance_type === 'PERCENTAGE' ? a.value + '%' : '৳' + (a.value | number:'1.0-0') }}
+            </span>
+            <button (click)="deleteAllowance(a.id!)" class="text-rose-500 hover:text-rose-700 text-xs p-1">🗑️</button>
+          </div>
+        </div>
+        <div *ngIf="allowanceConfigs.length === 0" class="py-8 text-center text-slate-400 text-xs">
+          No allowances configured yet.
+        </div>
+      </div>
+    </div>
+
+    <!-- Module 4: Bonuses -->
+    <div class="fuse-card-light p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-black text-slate-900">Module 4: Bonus Schemes</h2>
+          <p class="text-xs text-slate-500">Festival, Performance and Annual corporate bonuses</p>
+        </div>
+        <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700">
+          {{ bonusConfigs.length }} Schemes
+        </span>
+      </div>
+
+      <div class="divide-y divide-slate-100">
+        <div *ngFor="let b of bonusConfigs" class="py-3 flex items-center justify-between hover:bg-slate-50 px-2 rounded-xl transition">
+          <div>
+            <p class="font-bold text-slate-900 text-xs">{{ b.title }}</p>
+            <p class="text-[11px] text-slate-500">{{ b.description || 'Configured bonus rule' }}</p>
+            <div class="flex items-center space-x-2 mt-1">
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold">{{ b.bonus_type }}</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-bold">Month: {{ b.effective_month }}</span>
+            </div>
+          </div>
+          <div class="flex items-center space-x-3">
+            <span class="font-black text-emerald-700 text-sm">
+              {{ b.calculation_type === 'PERCENTAGE' ? b.value + '% of Basic' : '৳' + (b.value | number:'1.0-0') }}
+            </span>
+            <button (click)="deleteBonus(b.id!)" class="text-rose-500 hover:text-rose-700 text-xs p-1">🗑️</button>
+          </div>
+        </div>
+        <div *ngIf="bonusConfigs.length === 0" class="py-8 text-center text-slate-400 text-xs">
+          No bonus schemes configured yet.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Add Allowance Modal -->
+  <div *ngIf="showAddAllowanceModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <h3 class="font-black text-slate-900 text-sm">Add New Allowance Rule</h3>
+        <button (click)="closeAddAllowance()" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block text-slate-600 font-bold mb-1">Allowance Title</label>
+          <input type="text" [(ngModel)]="newAllowance.name" placeholder="e.g. Internet & Mobile Allowance" class="w-full p-2 border border-slate-200 rounded-lg">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-slate-600 font-bold mb-1">Calculation Type</label>
+            <select [(ngModel)]="newAllowance.allowance_type" class="w-full p-2 border border-slate-200 rounded-lg">
+              <option value="FIXED">Fixed Amount (৳)</option>
+              <option value="PERCENTAGE">Percentage of Basic (%)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-slate-600 font-bold mb-1">Value</label>
+            <input type="number" [(ngModel)]="newAllowance.value" class="w-full p-2 border border-slate-200 rounded-lg">
+          </div>
+        </div>
+        <div>
+          <label class="block text-slate-600 font-bold mb-1">Applies To</label>
+          <select [(ngModel)]="newAllowance.applies_to" class="w-full p-2 border border-slate-200 rounded-lg">
+            <option value="ALL">All Employees</option>
+            <option value="MANAGEMENT">Management / Executives Only</option>
+            <option value="STAFF">General Staff Only</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-slate-600 font-bold mb-1">Description / Notes</label>
+          <input type="text" [(ngModel)]="newAllowance.description" placeholder="Brief note" class="w-full p-2 border border-slate-200 rounded-lg">
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-2 pt-3 border-t border-slate-100">
+        <button (click)="closeAddAllowance()" class="px-3 py-1.5 rounded-lg text-slate-600 font-bold text-xs hover:bg-slate-100">Cancel</button>
+        <button (click)="saveAllowance()" class="px-4 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow">Save Allowance</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Bonus Modal -->
+  <div *ngIf="showAddBonusModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <h3 class="font-black text-slate-900 text-sm">Add New Bonus Scheme</h3>
+        <button (click)="closeAddBonus()" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block text-slate-600 font-bold mb-1">Bonus Title</label>
+          <input type="text" [(ngModel)]="newBonus.title" placeholder="e.g. Eid-ul-Fitr Bonus" class="w-full p-2 border border-slate-200 rounded-lg">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-slate-600 font-bold mb-1">Bonus Type</label>
+            <select [(ngModel)]="newBonus.bonus_type" class="w-full p-2 border border-slate-200 rounded-lg">
+              <option value="FESTIVAL">Festival Bonus</option>
+              <option value="PERFORMANCE">Performance Bonus</option>
+              <option value="ANNUAL">Annual Profit Share</option>
+              <option value="SPECIAL">Special Bonus</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-slate-600 font-bold mb-1">Calculation Type</label>
+            <select [(ngModel)]="newBonus.calculation_type" class="w-full p-2 border border-slate-200 rounded-lg">
+              <option value="PERCENTAGE">% of Basic Salary</option>
+              <option value="FIXED">Fixed Amount (৳)</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-slate-600 font-bold mb-1">Value (Amount or %)</label>
+          <input type="number" [(ngModel)]="newBonus.value" class="w-full p-2 border border-slate-200 rounded-lg">
+        </div>
+        <div>
+          <label class="block text-slate-600 font-bold mb-1">Description / Policy Details</label>
+          <input type="text" [(ngModel)]="newBonus.description" placeholder="Eligibility guidelines" class="w-full p-2 border border-slate-200 rounded-lg">
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-2 pt-3 border-t border-slate-100">
+        <button (click)="closeAddBonus()" class="px-3 py-1.5 rounded-lg text-slate-600 font-bold text-xs hover:bg-slate-100">Cancel</button>
+        <button (click)="saveBonus()" class="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow">Save Bonus</button>
+      </div>
+    </div>
+  </div>
+
+</div>

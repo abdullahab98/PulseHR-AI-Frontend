@@ -1,0 +1,85 @@
+<div class="p-6 max-w-7xl mx-auto space-y-6">
+
+  <!-- Header Banner -->
+  <div class="fuse-card-light p-6 rounded-2xl bg-white flex flex-col md:flex-row md:items-center md:justify-between border-l-4 border-blue-500 shadow-sm gap-4">
+    <div class="space-y-1">
+      <div class="flex items-center space-x-2">
+        <span class="px-2.5 py-0.5 rounded text-[10px] font-extrabold uppercase bg-blue-100 text-blue-800 tracking-wider">MODULE 2</span>
+        <span class="text-xs text-slate-500 font-semibold">• Payroll Management</span>
+      </div>
+      <h1 class="text-2xl font-black text-slate-900 tracking-tight">⏱️ Attendance & Leave Integration</h1>
+      <p class="text-xs text-slate-600">Sync working days, biometric check-in lates, unapproved absents, paid/unpaid leaves and overtime hours for salary computation.</p>
+    </div>
+
+    <!-- Cycle Filter & Sync -->
+    <div class="flex items-center space-x-3">
+      <div>
+        <label class="block text-[10px] text-slate-500 uppercase font-black">Month Cycle</label>
+        <input type="month"
+               [(ngModel)]="selectedMonth"
+               (change)="onMonthChange()"
+               class="p-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 shadow-sm font-bold">
+      </div>
+      <button (click)="loadData()"
+              class="px-4 py-2 mt-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition shadow-sm flex items-center space-x-1.5">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        <span>Refresh Sync</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Attendance Table -->
+  <div class="fuse-card-light p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-base font-black text-slate-900">Workforce Attendance & Leave Integration Table</h2>
+        <p class="text-xs text-slate-500">Real-time attendance logs analyzed and aggregated for {{ selectedMonth }}</p>
+      </div>
+      <span *ngIf="attendanceSummary" class="px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700">
+        {{ attendanceSummary.attendance_integration.length }} Employees Aggregated
+      </span>
+    </div>
+
+    <div *ngIf="loading" class="py-12 text-center text-slate-400 text-xs">Analyzing biometric attendance & approved leave records...</div>
+
+    <div *ngIf="!loading && attendanceSummary" class="overflow-x-auto">
+      <table class="w-full text-left text-xs">
+        <thead class="bg-slate-50 text-slate-500 font-bold uppercase text-[10px] border-b border-slate-200">
+          <tr>
+            <th class="p-3">Employee</th>
+            <th class="p-3 text-center">Month Days</th>
+            <th class="p-3 text-center">Weekends</th>
+            <th class="p-3 text-center font-bold text-slate-800">Working Days</th>
+            <th class="p-3 text-center text-emerald-700 font-black">Present</th>
+            <th class="p-3 text-center text-amber-600 font-black">Lates</th>
+            <th class="p-3 text-center text-rose-600 font-black">Absent</th>
+            <th class="p-3 text-center text-blue-600 font-bold">Paid Leaves</th>
+            <th class="p-3 text-center text-purple-600 font-bold">Unpaid Leaves</th>
+            <th class="p-3 text-center text-teal-700 font-black">Overtime</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 font-medium">
+          <tr *ngFor="let a of attendanceSummary.attendance_integration" class="hover:bg-slate-50">
+            <td class="p-3 font-bold text-slate-900">
+              <p class="font-bold">{{ a.employee_name }}</p>
+              <p class="text-[10px] text-slate-500">{{ a.department }}</p>
+            </td>
+            <td class="p-3 text-center text-slate-700 font-bold">{{ a.total_month_days }}</td>
+            <td class="p-3 text-center text-slate-500">{{ a.weekend_days }}</td>
+            <td class="p-3 text-center font-bold text-slate-800">{{ a.working_days }}</td>
+            <td class="p-3 text-center text-emerald-700 font-black">{{ a.present_days }}</td>
+            <td class="p-3 text-center text-amber-600 font-black">{{ a.late_days }}</td>
+            <td class="p-3 text-center text-rose-600 font-black">{{ a.absent_days }}</td>
+            <td class="p-3 text-center text-blue-600 font-bold">{{ a.paid_leaves }}</td>
+            <td class="p-3 text-center text-purple-600 font-bold">{{ a.unpaid_leaves }}</td>
+            <td class="p-3 text-center font-black text-teal-700">{{ a.overtime_hours }}h</td>
+          </tr>
+          <tr *ngIf="attendanceSummary.attendance_integration.length === 0">
+            <td colspan="10" class="p-6 text-center text-slate-400">No attendance data found for {{ selectedMonth }}.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
