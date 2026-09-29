@@ -1,0 +1,168 @@
+<div class="space-y-6">
+  <!-- Page Header -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-2 border-b border-slate-200">
+    <div>
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
+          <span class="text-lg">📈</span>
+        </div>
+        <div>
+          <h1 class="text-2xl font-black text-slate-900 tracking-tight">Employee Leave Report</h1>
+          <p class="text-xs text-slate-500 font-medium mt-0.5">Enterprise workforce leave utilization, departmental quotas & absenteeism telemetry</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Status Pill & Export -->
+    <div class="flex items-center space-x-2 text-xs font-semibold">
+      <span class="px-3 py-1.5 rounded-xl bg-blue-50 text-blue-700 border border-blue-200 shadow-2xs">
+        Panel 4 of 6
+      </span>
+      <button (click)="exportCSV()"
+              class="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs flex items-center space-x-1.5 transition-all">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+        <span>Export CSV</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Metric Overview Cards -->
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+      <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Active Staff</p>
+      <p class="text-2xl font-black text-slate-900 mt-1">{{ reportData.summary.total_employees }}</p>
+      <p class="text-[10px] text-slate-400 mt-0.5">Tracked under policies</p>
+    </div>
+
+    <div class="bg-white p-4 rounded-2xl border border-amber-200/80 shadow-xs bg-gradient-to-b from-amber-50/30 to-transparent">
+      <p class="text-[11px] font-bold text-amber-700 uppercase tracking-wider">Pending Decisions</p>
+      <p class="text-2xl font-black text-amber-700 mt-1">{{ reportData.summary.total_pending_requests }}</p>
+      <p class="text-[10px] text-amber-600 mt-0.5">In manager queues</p>
+    </div>
+
+    <div class="bg-white p-4 rounded-2xl border border-indigo-200/80 shadow-xs bg-gradient-to-b from-indigo-50/30 to-transparent">
+      <p class="text-[11px] font-bold text-indigo-700 uppercase tracking-wider">Total Days Consumed</p>
+      <p class="text-2xl font-black text-indigo-700 mt-1">{{ reportData.summary.total_days_taken }} <span class="text-xs font-normal text-indigo-500">Days</span></p>
+      <p class="text-[10px] text-indigo-600 mt-0.5">During FY {{ selectedYear }}</p>
+    </div>
+
+    <div class="bg-white p-4 rounded-2xl border border-emerald-200/80 shadow-xs bg-gradient-to-b from-emerald-50/30 to-transparent">
+      <p class="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Avg Leave / Employee</p>
+      <p class="text-2xl font-black text-emerald-700 mt-1">
+        {{ reportData.summary.avg_leave_per_emp | number:'1.1-1' }} <span class="text-xs font-normal text-emerald-500">Days</span>
+      </p>
+      <p class="text-[10px] text-emerald-600 mt-0.5">Most used: {{ reportData.summary.most_used_leave_type }}</p>
+    </div>
+  </div>
+
+  <!-- Filter & Controls Toolbar -->
+  <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs space-y-3">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <!-- Search Employee -->
+      <div>
+        <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Search Staff Member</label>
+        <div class="relative">
+          <input type="text" [(ngModel)]="searchTerm" placeholder="Search by name, code, designation..."
+                 class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Department Filter -->
+      <div>
+        <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Department</label>
+        <select [(ngModel)]="selectedDepartment"
+                class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+          <option value="ALL">All Departments</option>
+          <option *ngFor="let dept of departmentList" [value]="dept">{{ dept }}</option>
+        </select>
+      </div>
+
+      <!-- Year Selector -->
+      <div>
+        <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Calendar Year</label>
+        <select [(ngModel)]="selectedYear" (change)="loadReport()"
+                class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+          <option [value]="2026">2026</option>
+          <option [value]="2025">2025</option>
+          <option [value]="2024">2024</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Employee Table Card -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs">
+        <thead class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider text-[10px] border-b border-slate-200">
+          <tr>
+            <th class="py-3 px-4">Employee</th>
+            <th class="py-3 px-4">Department & Role</th>
+            <th class="py-3 px-4 text-center">Annual Used</th>
+            <th class="py-3 px-4 text-center">Casual Used</th>
+            <th class="py-3 px-4 text-center">Sick Used</th>
+            <th class="py-3 px-4 text-center">Total Taken</th>
+            <th class="py-3 px-4 text-center">Remaining Balance</th>
+            <th class="py-3 px-4 text-center">Usage Index</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 font-medium">
+          <tr *ngFor="let emp of filteredEmployees" class="hover:bg-slate-50/70 transition-colors">
+            <td class="py-3.5 px-4">
+              <div class="flex items-center space-x-2.5">
+                <div class="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-600 text-xs">
+                  {{ emp.employee_name ? emp.employee_name[0] : 'E' }}
+                </div>
+                <div>
+                  <p class="font-bold text-slate-800">{{ emp.employee_name }}</p>
+                  <p class="text-[10px] text-slate-400 font-mono">{{ emp.employee_code || ('ID #' + emp.employee_id) }}</p>
+                </div>
+              </div>
+            </td>
+            <td class="py-3.5 px-4 text-slate-600">
+              <p class="font-semibold text-slate-800">{{ emp.department_name || 'General' }}</p>
+              <p class="text-[10px] text-slate-500">{{ emp.designation_name || 'Staff' }}</p>
+            </td>
+            <td class="py-3.5 px-4 text-center font-semibold text-slate-800">
+              {{ emp.annual_used }} d
+            </td>
+            <td class="py-3.5 px-4 text-center font-semibold text-slate-800">
+              {{ emp.casual_used }} d
+            </td>
+            <td class="py-3.5 px-4 text-center font-semibold text-slate-800">
+              {{ emp.sick_used }} d
+            </td>
+            <td class="py-3.5 px-4 text-center">
+              <span class="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-black text-xs">
+                {{ emp.total_used }} Days
+              </span>
+            </td>
+            <td class="py-3.5 px-4 text-center">
+              <span class="font-bold text-emerald-700 text-xs">
+                {{ emp.remaining_balance }} Days
+              </span>
+            </td>
+            <td class="py-3.5 px-4 text-center">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border uppercase"
+                    [ngClass]="getUtilizationBadge(emp.total_used).class">
+                {{ getUtilizationBadge(emp.total_used).label }}
+              </span>
+            </td>
+          </tr>
+
+          <tr *ngIf="filteredEmployees.length === 0">
+            <td colspan="8" class="py-12 text-center text-slate-400">
+              <p class="text-sm font-bold text-slate-700">No employee records match criteria</p>
+              <p class="text-xs text-slate-400 mt-1">Check department or search parameters.</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
