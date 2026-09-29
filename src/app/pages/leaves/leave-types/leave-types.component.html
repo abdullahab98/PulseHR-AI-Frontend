@@ -1,0 +1,240 @@
+<div class="space-y-6">
+  <!-- Page Header -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-2 border-b border-slate-200">
+    <div>
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-teal-600 to-cyan-500 flex items-center justify-center text-white shadow-md shadow-teal-500/20">
+          <span class="text-lg">🏷️</span>
+        </div>
+        <div>
+          <h1 class="text-2xl font-black text-slate-900 tracking-tight">Leave Types Master</h1>
+          <p class="text-xs text-slate-500 font-medium mt-0.5">Define corporate absence categories, statutory quotas, paid policies & carry-forward rules</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions & Badges -->
+    <div class="flex items-center space-x-3">
+      <span class="px-3 py-1.5 rounded-xl bg-blue-50 text-blue-700 border border-blue-200 text-xs font-semibold shadow-2xs">
+        Panel 6 of 6
+      </span>
+      <button (click)="openCreateModal()"
+              class="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold shadow-md shadow-teal-500/20 flex items-center space-x-2 transition-all">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        <span>+ Create Leave Type</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Metric Overview Cards -->
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+      <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Categories</p>
+      <p class="text-2xl font-black text-slate-900 mt-1">{{ totalTypesCount }}</p>
+      <p class="text-[10px] text-slate-400 mt-0.5">Configured leave types</p>
+    </div>
+
+    <div class="bg-white p-4 rounded-2xl border border-teal-200/80 shadow-xs bg-gradient-to-b from-teal-50/30 to-transparent">
+      <p class="text-[11px] font-bold text-teal-700 uppercase tracking-wider">Paid Leaves</p>
+      <p class="text-2xl font-black text-teal-700 mt-1">{{ paidTypesCount }}</p>
+      <p class="text-[10px] text-teal-600 mt-0.5">Salary compensated</p>
+    </div>
+
+    <div class="bg-white p-4 rounded-2xl border border-emerald-200/80 shadow-xs bg-gradient-to-b from-emerald-50/30 to-transparent">
+      <p class="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Active Policies</p>
+      <p class="text-2xl font-black text-emerald-700 mt-1">{{ activeTypesCount }}</p>
+      <p class="text-[10px] text-emerald-600 mt-0.5">Visible to employees</p>
+    </div>
+
+    <div class="bg-white p-4 rounded-2xl border border-amber-200/80 shadow-xs bg-gradient-to-b from-amber-50/30 to-transparent">
+      <p class="text-[11px] font-bold text-amber-700 uppercase tracking-wider">Unpaid / Deductible</p>
+      <p class="text-2xl font-black text-amber-700 mt-1">{{ totalTypesCount - paidTypesCount }}</p>
+      <p class="text-[10px] text-amber-600 mt-0.5">Unpaid leave types</p>
+    </div>
+  </div>
+
+  <!-- Cards Grid View -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div *ngFor="let lt of leaveTypes"
+         class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs hover:shadow-sm transition-all flex flex-col justify-between">
+      <div>
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+          <span class="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border"
+                [ngClass]="getTypeBadgeClass(lt.code)">
+            {{ lt.code }}
+          </span>
+          <span *ngIf="lt.is_active" class="flex items-center space-x-1 text-[11px] font-bold text-emerald-600">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            <span>Active</span>
+          </span>
+          <span *ngIf="!lt.is_active" class="text-[11px] font-bold text-slate-400">
+            Inactive
+          </span>
+        </div>
+
+        <div class="mt-3">
+          <h3 class="text-base font-bold text-slate-900">{{ lt.name }}</h3>
+          <p class="text-xs text-slate-500 mt-1 line-clamp-2">{{ lt.description || 'Corporate absence policy category.' }}</p>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-slate-100 grid grid-cols-2 gap-2 text-xs">
+          <div>
+            <span class="text-slate-400 text-[10px] uppercase font-bold tracking-wider block">Yearly Allocation</span>
+            <span class="font-black text-slate-900 text-sm">{{ lt.days_allowed }} Days</span>
+          </div>
+          <div>
+            <span class="text-slate-400 text-[10px] uppercase font-bold tracking-wider block">Compensation</span>
+            <span class="font-bold" [ngClass]="lt.is_paid ? 'text-emerald-700' : 'text-amber-700'">
+              {{ lt.is_paid ? 'Paid Leave' : 'Unpaid' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="mt-2 text-[11px] text-slate-500 flex items-center justify-between">
+          <span>Carry Forward:</span>
+          <span class="font-semibold text-slate-700">
+            {{ lt.carry_forward ? 'Allowed' : 'No (resets yearly)' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between">
+        <span class="text-[10px] text-slate-400 font-mono">ID: #{{ lt.id }}</span>
+        <button (click)="toggleActive(lt)"
+                [ngClass]="lt.is_active ? 'text-rose-600 hover:bg-rose-50' : 'text-emerald-600 hover:bg-emerald-50'"
+                class="px-2.5 py-1 rounded-lg text-xs font-bold transition-colors">
+          {{ lt.is_active ? 'Deactivate' : 'Activate' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detailed Configuration Table -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+    <div class="p-5 border-b border-slate-200">
+      <h2 class="text-base font-bold text-slate-900">Policy Rules Matrix</h2>
+      <p class="text-xs text-slate-500 mt-0.5">Comprehensive audit table of configured leave definitions</p>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs">
+        <thead class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider text-[10px] border-b border-slate-200">
+          <tr>
+            <th class="py-3 px-4">Code</th>
+            <th class="py-3 px-4">Name</th>
+            <th class="py-3 px-4">Default Quota</th>
+            <th class="py-3 px-4">Paid Status</th>
+            <th class="py-3 px-4">Carry Forward</th>
+            <th class="py-3 px-4">Status</th>
+            <th class="py-3 px-4 text-center">Toggle</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 font-medium">
+          <tr *ngFor="let item of leaveTypes" class="hover:bg-slate-50/70 transition-colors">
+            <td class="py-3.5 px-4 font-mono font-bold text-slate-700">{{ item.code }}</td>
+            <td class="py-3.5 px-4 font-bold text-slate-900">{{ item.name }}</td>
+            <td class="py-3.5 px-4 text-slate-800">
+              <span class="font-bold text-slate-900">{{ item.days_allowed }}</span> days/yr
+            </td>
+            <td class="py-3.5 px-4">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border"
+                    [ngClass]="item.is_paid ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'">
+                {{ item.is_paid ? 'PAID' : 'UNPAID' }}
+              </span>
+            </td>
+            <td class="py-3.5 px-4 text-slate-600">
+              {{ item.carry_forward ? 'Allowed' : 'None' }}
+            </td>
+            <td class="py-3.5 px-4">
+              <span *ngIf="item.is_active" class="text-emerald-600 font-bold flex items-center space-x-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span>Active</span>
+              </span>
+              <span *ngIf="!item.is_active" class="text-slate-400 font-semibold">Disabled</span>
+            </td>
+            <td class="py-3.5 px-4 text-center">
+              <button (click)="toggleActive(item)"
+                      class="px-2.5 py-1 rounded-lg text-xs font-bold border border-slate-200 hover:bg-slate-100 transition-colors">
+                {{ item.is_active ? 'Disable' : 'Enable' }}
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Create Leave Type Modal -->
+  <div *ngIf="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center space-x-2">
+          <span class="text-lg">🏷️</span>
+          <h3 class="text-base font-bold text-slate-900">Create Leave Policy Type</h3>
+        </div>
+        <button (click)="closeCreateModal()" class="text-slate-400 hover:text-slate-600 p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="mt-4 space-y-3.5 text-xs">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Code (Uppercase)</label>
+            <input type="text" [(ngModel)]="newType.code" placeholder="e.g. BEREAVEMENT"
+                   class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 font-mono">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Days / Year</label>
+            <input type="number" min="0" max="365" [(ngModel)]="newType.days_allowed"
+                   class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Policy Display Name</label>
+          <input type="text" [(ngModel)]="newType.name" placeholder="e.g. Bereavement / Compassionate Leave"
+                 class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium">
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Description / Policy Details</label>
+          <textarea [(ngModel)]="newType.description" rows="2" placeholder="Policy terms, eligibility rules..."
+                    class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500"></textarea>
+        </div>
+
+        <div class="p-3 bg-slate-50 border border-slate-100 rounded-xl space-y-2">
+          <div class="flex items-center space-x-2">
+            <input type="checkbox" id="isPaid" [(ngModel)]="newType.is_paid" class="rounded text-teal-600 focus:ring-teal-500">
+            <label for="isPaid" class="font-bold text-slate-700">Paid Leave (Salaried)</label>
+          </div>
+
+          <div class="flex items-center space-x-2">
+            <input type="checkbox" id="carryForward" [(ngModel)]="newType.carry_forward" class="rounded text-teal-600 focus:ring-teal-500">
+            <label for="carryForward" class="font-bold text-slate-700">Allow Carry-Forward to next cycle</label>
+          </div>
+
+          <div class="flex items-center space-x-2">
+            <input type="checkbox" id="reqAttach" [(ngModel)]="newType.requires_attachment" class="rounded text-teal-600 focus:ring-teal-500">
+            <label for="reqAttach" class="font-bold text-slate-700">Requires Medical / Document Attachment</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 flex items-center justify-end space-x-2 pt-3 border-t border-slate-100">
+        <button (click)="closeCreateModal()"
+                class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors">
+          Cancel
+        </button>
+        <button (click)="saveLeaveType()" [disabled]="isSaving"
+                class="px-5 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold shadow-md shadow-teal-500/20 transition-all">
+          Create Policy
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

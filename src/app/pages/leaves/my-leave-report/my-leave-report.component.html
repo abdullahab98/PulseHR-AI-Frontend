@@ -1,0 +1,205 @@
+<div class="space-y-6">
+  <!-- Page Header -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-2 border-b border-slate-200">
+    <div>
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
+          <span class="text-lg">📊</span>
+        </div>
+        <div>
+          <h1 class="text-2xl font-black text-slate-900 tracking-tight">My Leave Report</h1>
+          <p class="text-xs text-slate-500 font-medium mt-0.5">
+            Personal leave allocation, utilization balance and status telemetry for {{ reportData.employee_name }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Status Pills -->
+    <div class="flex items-center space-x-2 text-xs font-semibold">
+      <span class="px-3 py-1.5 rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-200 shadow-2xs flex items-center space-x-1.5">
+        <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+        <span>FY {{ selectedYear }} Cycle</span>
+      </span>
+      <span class="px-3 py-1.5 rounded-xl bg-blue-50 text-blue-700 border border-blue-200 shadow-2xs">
+        Panel 1 of 6
+      </span>
+    </div>
+  </div>
+
+  <!-- Metric Overview Grid -->
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+      <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Allocated</p>
+      <p class="text-2xl font-black text-slate-900 mt-1">{{ reportData.total_allocated }} <span class="text-xs font-normal text-slate-500">Days</span></p>
+      <p class="text-[10px] text-slate-400 mt-0.5">Total policy quota</p>
+    </div>
+
+    <div class="bg-white p-4 rounded-2xl border border-rose-200/80 shadow-xs bg-gradient-to-b from-rose-50/30 to-transparent">
+      <p class="text-[11px] font-bold text-rose-700 uppercase tracking-wider">Leaves Used</p>
+      <p class="text-2xl font-black text-rose-700 mt-1">{{ reportData.total_used }} <span class="text-xs font-normal text-rose-500">Days</span></p>
+      <p class="text-[10px] text-rose-600 mt-0.5">Approved & taken</p>
+    </div>
+
+    <div class="bg-white p-4 rounded-2xl border border-emerald-200/80 shadow-xs bg-gradient-to-b from-emerald-50/30 to-transparent">
+      <p class="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Available Balance</p>
+      <p class="text-2xl font-black text-emerald-700 mt-1">{{ reportData.total_remaining }} <span class="text-xs font-normal text-emerald-500">Days</span></p>
+      <p class="text-[10px] text-emerald-600 mt-0.5">Remaining quota</p>
+    </div>
+
+    <div class="bg-white p-4 rounded-2xl border border-amber-200/80 shadow-xs bg-gradient-to-b from-amber-50/30 to-transparent">
+      <p class="text-[11px] font-bold text-amber-700 uppercase tracking-wider">Pending Approval</p>
+      <p class="text-2xl font-black text-amber-700 mt-1">{{ reportData.total_pending }}</p>
+      <p class="text-[10px] text-amber-600 mt-0.5">In review queue</p>
+    </div>
+  </div>
+
+  <!-- Leave Quota Breakdown Cards -->
+  <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+    <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+      <div>
+        <h2 class="text-sm font-bold text-slate-800 tracking-tight">Leave Category Quotas</h2>
+        <p class="text-xs text-slate-500">Breakdown of personal quota allocation, usage and remaining balances</p>
+      </div>
+      <div class="flex items-center space-x-2">
+        <label class="text-xs font-semibold text-slate-600">Year:</label>
+        <select [(ngModel)]="selectedYear" (change)="loadReport()"
+                class="px-2.5 py-1 text-xs rounded-lg border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-slate-700">
+          <option [value]="2026">2026</option>
+          <option [value]="2025">2025</option>
+          <option [value]="2024">2024</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 pt-1">
+      <div *ngFor="let quota of reportData.quotas" class="p-4 rounded-xl border border-slate-200/90 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-700">{{ quota.name }}</span>
+          <span class="text-[10px] font-semibold px-2 py-0.5 rounded-md border" [ngClass]="getTypeBadgeClass(quota.leave_type)">
+            {{ quota.leave_type }}
+          </span>
+        </div>
+
+        <div class="flex items-baseline justify-between mt-3">
+          <div>
+            <span class="text-xl font-black text-slate-900">{{ quota.remaining }}</span>
+            <span class="text-[11px] text-slate-500 font-medium ml-1">left</span>
+          </div>
+          <div class="text-right text-[11px] text-slate-500">
+            <span>{{ quota.used }} used / {{ quota.allocated }}</span>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="w-full bg-slate-200 rounded-full h-1.5 mt-2.5 overflow-hidden">
+          <div class="bg-indigo-600 h-1.5 rounded-full transition-all duration-300"
+               [style.width.%]="quota.allocated > 0 ? (quota.used / quota.allocated) * 100 : 0"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leave History Section -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+    <!-- Section Header & Filter -->
+    <div class="p-5 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h2 class="text-base font-bold text-slate-900">Personal Leave History</h2>
+        <p class="text-xs text-slate-500 mt-0.5">Timeline of all submitted leave requests and their review states</p>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <!-- Status Filter Pills -->
+        <div class="flex items-center space-x-1 bg-slate-100 p-1 rounded-xl">
+          <button (click)="statusFilter = 'ALL'"
+                  [class.bg-white]="statusFilter === 'ALL'"
+                  [class.shadow-xs]="statusFilter === 'ALL'"
+                  [class.text-slate-900]="statusFilter === 'ALL'"
+                  class="px-2.5 py-1 text-xs font-semibold rounded-lg text-slate-600 transition-colors">
+            All
+          </button>
+          <button (click)="statusFilter = 'PENDING'"
+                  [class.bg-white]="statusFilter === 'PENDING'"
+                  [class.shadow-xs]="statusFilter === 'PENDING'"
+                  [class.text-slate-900]="statusFilter === 'PENDING'"
+                  class="px-2.5 py-1 text-xs font-semibold rounded-lg text-slate-600 transition-colors">
+            Pending
+          </button>
+          <button (click)="statusFilter = 'APPROVED'"
+                  [class.bg-white]="statusFilter === 'APPROVED'"
+                  [class.shadow-xs]="statusFilter === 'APPROVED'"
+                  [class.text-slate-900]="statusFilter === 'APPROVED'"
+                  class="px-2.5 py-1 text-xs font-semibold rounded-lg text-slate-600 transition-colors">
+            Approved
+          </button>
+          <button (click)="statusFilter = 'REJECTED'"
+                  [class.bg-white]="statusFilter === 'REJECTED'"
+                  [class.shadow-xs]="statusFilter === 'REJECTED'"
+                  [class.text-slate-900]="statusFilter === 'REJECTED'"
+                  class="px-2.5 py-1 text-xs font-semibold rounded-lg text-slate-600 transition-colors">
+            Rejected
+          </button>
+        </div>
+
+        <button (click)="loadReport()"
+                class="p-2 text-slate-500 hover:text-slate-700 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs">
+        <thead class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider text-[10px] border-b border-slate-200">
+          <tr>
+            <th class="py-3 px-4">Request ID</th>
+            <th class="py-3 px-4">Leave Type</th>
+            <th class="py-3 px-4">Date Range</th>
+            <th class="py-3 px-4">Duration</th>
+            <th class="py-3 px-4">Reason / Purpose</th>
+            <th class="py-3 px-4">Status</th>
+            <th class="py-3 px-4">Applied Date</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 font-medium">
+          <tr *ngFor="let item of filteredHistory" class="hover:bg-slate-50/70 transition-colors">
+            <td class="py-3.5 px-4 font-mono text-slate-500 font-semibold">#LR-{{ item.id }}</td>
+            <td class="py-3.5 px-4">
+              <span class="px-2 py-1 rounded-md text-[11px] font-bold border" [ngClass]="getTypeBadgeClass(item.leave_type)">
+                {{ item.leave_type }}
+              </span>
+            </td>
+            <td class="py-3.5 px-4 text-slate-800 font-semibold">
+              {{ item.start_date }} <span class="text-slate-400 font-normal">to</span> {{ item.end_date }}
+            </td>
+            <td class="py-3.5 px-4 text-slate-700">
+              <span class="font-bold text-slate-900">{{ item.days_count || 1 }}</span> day(s)
+            </td>
+            <td class="py-3.5 px-4 text-slate-600 max-w-xs truncate">
+              {{ item.reason || 'Personal reasons' }}
+            </td>
+            <td class="py-3.5 px-4">
+              <span class="px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide border uppercase" [ngClass]="getStatusBadgeClass(item.status)">
+                {{ item.status }}
+              </span>
+            </td>
+            <td class="py-3.5 px-4 text-slate-500">
+              {{ item.created_at ? (item.created_at | date:'mediumDate') : 'Recent' }}
+            </td>
+          </tr>
+
+          <tr *ngIf="filteredHistory.length === 0">
+            <td colspan="7" class="py-10 text-center text-slate-400">
+              <p class="text-sm font-semibold">No leave applications found for this filter</p>
+              <p class="text-xs text-slate-400 mt-1">Submit a leave request from the "My Leave Application" panel.</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
